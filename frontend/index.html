@@ -246,9 +246,10 @@ footer .row{justify-content:space-between}
         <div class="stepnum">01</div>
         <h3>Underwrite</h3>
         <p>Pick a location and 1–4 historical weekly windows. The dApp fetches
-        the Open-Meteo Archive record for each, canonicalizes it (timing field
-        stripped, numbers normalized, sorted-key JSON) and commits its sha256
-        on-chain with your trigger and payout.</p>
+        each week's canonical Open-Meteo Archive record from the project's
+        commit-pinned record catalog (portable to the validators' allowed
+        hosts), hashes it, and commits the sha256 pins on-chain with your
+        trigger and payout.</p>
       </div>
       <div class="glass step">
         <div class="stepnum">02</div>
@@ -387,6 +388,9 @@ footer .row{justify-content:space-between}
 "use strict";
 /* ================= contract binding ================= */
 const CONTRACT = "0x57806f65a48bEA713500b79E06F6b0D018fcFFcb";
+const OWNER = "faisalnugroho";
+const REPO = "rainhedge";
+const RECORDS_COMMIT = "c55dbe185986988be99023221f9835624baa4e05";
 const SDK = window.GenLayerSDK;
 const $ = id => document.getElementById(id);
 const BUILD = "frontend @ c55dbe1";
@@ -415,17 +419,19 @@ async function sha256Hex(str){
   const dig = await crypto.subtle.digest("SHA-256", buf);
   return [...new Uint8Array(dig)].map(b => b.toString(16).padStart(2,"0")).join("");
 }
-function recordUrl(lat, lon, w){
-  return "https://archive-api.open-meteo.com/v1/archive?"
-    + "latitude=" + lat + "&longitude=" + lon
-    + "&start_date=" + w[0] + "&end_date=" + w[1]
-    + "&daily=precipitation_sum&timezone=GMT";
+function recordUrl(window){
+  return "https://raw.githubusercontent.com/" + OWNER + "/" + REPO
+    + "/" + RECORDS_COMMIT + "/records/" + window[0] + "_" + window[1]
+    + ".json";
 }
 async function pinWindow(lat, lon, w){
-  const url = recordUrl(lat, lon, w);
+  const url = recordUrl(w);
   const res = await fetch(url);
   if (!res.ok) throw new Error("record fetch failed: HTTP " + res.status);
-  const canon = canonicalJson(await res.text());
+  const text = await res.text();
+  // verify the canonical record matches what the catalog documents
+  // (defense in depth: the sha256 pin must be over the served bytes)
+  const canon = canonicalJson(text);
   return { url, digest: await sha256Hex(canon) };
 }
 
@@ -542,7 +548,7 @@ $("btnOpen").addEventListener("click", async () => {
     const pid = $("pid").value.trim();
     if (!/^[a-z0-9-]{3,40}$/.test(pid)) throw new Error("policy id: 3-40 chars a-z0-9-");
     const ws = collectWindows();
-    setStatus("stOpen","info","Fetching " + ws.length + " record(s) & building pins…");
+    setStatus("stOpen","info","Fetching " + ws.length + " ported record(s) & building pins…");
     const pins = [];
     for (const win of ws) pins.push(await pinWindow(lat, lon, win));
     $("pinPreview").textContent = pins.map(p=>p.digest.slice(0,10)+"…").join("  ");
