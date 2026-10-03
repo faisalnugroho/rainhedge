@@ -1,0 +1,26 @@
+deployer: 0x8183965AD0A53EebcD1869C93d794733291cfD10
+[deploy] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+CONTRACT: 0x18ADC34Ee1069AaC0CA9dF04324E3c6A9D2C90Dc
+== preflight (canonical digests over live records) ==
+preflight ok: ('2026-03-09', '2026-03-15') 347 bytes  sha 6352e857fe03
+preflight ok: ('2026-05-25', '2026-05-31') 343 bytes  sha 7bb5eb868f1c
+preflight ok: ('2026-03-02', '2026-03-08') 350 bytes  sha cac1dc42602b
+preflight ok: ('2026-02-02', '2026-02-08') 351 bytes  sha f895e2a5e85d
+[open#drought-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[fund#drought-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[drought-1] challenge window: sleeping 320s...
+[resolve#drought-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+drought-1: INCONCLUSIVE totals=[]
+[open#drought-2] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[fund#drought-2] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[drought-2] challenge window: sleeping 320s...
+[resolve#drought-2] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+drought-2: INCONCLUSIVE totals=[]
+[open#drought-3] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[fund#drought-3] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[drought-3] challenge window: sleeping 320s...
+[resolve#drought-3] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+drought-3: INCONCLUSIVE totals=[]
+DETERMINISM: ['INCONCLUSIVE', 'INCONCLUSIVE', 'INCONCLUSIVE'] consistent: False
+[open#rain-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[fund#rain-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True

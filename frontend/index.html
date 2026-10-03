@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RainHedge — parametric rainfall cover on GenLayer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --storm:#0B1220; --cloud:#16202E; --cloud2:#1D2A3B;
+  --text:#E6EDF6; --muted:#93A4B8; --faint:#5C6E84;
+  --rain:#7DD3FC; --payout:#4ADE80; --amber:#F5B54A; --bad:#F87A7A;
+  --glass:rgba(255,255,255,.06); --glass2:rgba(255,255,255,.09);
+  --edge:rgba(255,255,255,.16); --edge2:rgba(255,255,255,.28);
+  --blur:blur(18px) saturate(1.35);
+  --r:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--storm); color:var(--text);
+  font:16px/1.6 "Inter",sans-serif; min-height:100vh; overflow-x:hidden;
+}
+/* ---- atmosphere: cloudbanks + rain ---- */
+.sky{position:fixed; inset:0; z-index:-3; background:
+  radial-gradient(1200px 700px at 80% -10%, #24344A 0%, transparent 60%),
+  radial-gradient(900px 600px at 12% 8%, #1B2A3E 0%, transparent 55%),
+  linear-gradient(180deg, #0E1726 0%, var(--storm) 55%, #0A101B 100%);}
+.clouds{position:fixed; inset:0; z-index:-2; pointer-events:none; opacity:.55;
+  background:
+   radial-gradient(600px 220px at 25% 12%, rgba(255,255,255,.05), transparent 70%),
+   radial-gradient(800px 260px at 70% 30%, rgba(255,255,255,.04), transparent 70%);}
+#rain{position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.5}
+.glass{
+  background:var(--glass); border:1px solid var(--edge);
+  border-radius:var(--r); backdrop-filter:var(--blur);
+  -webkit-backdrop-filter:var(--blur);
+  box-shadow:0 20px 50px rgba(2,6,16,.45), inset 0 1px 0 rgba(255,255,255,.09);
+}
+.wrap{max-width:1120px; margin:0 auto; padding:0 24px}
+/* ---- header ---- */
+header{position:sticky; top:0; z-index:50; padding:14px 0;
+  background:linear-gradient(180deg, rgba(11,18,32,.88), rgba(11,18,32,.55));
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(255,255,255,.07);}
+.bar{display:flex; align-items:center; gap:18px}
+.logo{display:flex; align-items:center; gap:10px; font:800 19px "Sora"; letter-spacing:.2px}
+.logo .drop{width:26px;height:26px;border-radius:8px 8px 12px 12px;
+  background:linear-gradient(160deg,var(--rain),#3B82F6);
+  box-shadow:0 4px 14px rgba(125,211,252,.35)}
+nav{margin-left:auto; display:flex; gap:22px; font-size:14.5px; color:var(--muted)}
+nav a{color:inherit; text-decoration:none}
+nav a:hover{color:var(--text)}
+.walletchip{margin-left:8px}
+/* ---- buttons & inputs ---- */
+button{font:600 14.5px "Inter"; color:var(--text); cursor:pointer;
+  border:1px solid var(--edge2); background:var(--glass2);
+  padding:10px 18px; border-radius:12px;
+  backdrop-filter:var(--blur); -webkit-backdrop-filter:var(--blur);
+  transition:transform .12s ease, background .2s ease, border-color .2s;}
+button:hover{background:rgba(255,255,255,.14); transform:translateY(-1px)}
+button:active{transform:translateY(0)}
+button:disabled{opacity:.45; cursor:not-allowed; transform:none}
+button.primary{background:linear-gradient(160deg, rgba(125,211,252,.28), rgba(59,130,246,.30));
+  border-color:rgba(125,211,252,.5)}
+button.primary:hover{background:linear-gradient(160deg, rgba(125,211,252,.4), rgba(59,130,246,.42))}
+button.ghost{border-color:var(--edge); background:transparent}
+button.tiny{padding:6px 12px; font-size:13px; border-radius:9px}
+input,select{font:500 14.5px "Inter"; color:var(--text);
+  background:rgba(4,10,20,.5); border:1px solid var(--edge);
+  border-radius:11px; padding:10px 13px; width:100%; outline:none}
+input:focus,select:focus{border-color:rgba(125,211,252,.65);
+  box-shadow:0 0 0 3px rgba(125,211,252,.14)}
+label{font-size:12.5px; color:var(--muted); letter-spacing:.4px;
+  text-transform:uppercase; font-weight:600}
+code,.mono{font-family:"JetBrains Mono",monospace; font-size:.92em}
+a{color:var(--rain)}
+/* ---- hero ---- */
+.hero{padding:84px 0 40px; display:grid; grid-template-columns:1.15fr .85fr; gap:48px; align-items:center}
+.eyebrow{display:inline-flex; align-items:center; gap:8px; font:600 12.5px "Inter";
+  letter-spacing:2.2px; text-transform:uppercase; color:var(--rain);
+  border:1px solid rgba(125,211,252,.3); padding:7px 14px; border-radius:999px;
+  background:rgba(125,211,252,.07)}
+h1{font:800 clamp(38px,5vw,58px)/1.06 "Sora"; margin:22px 0 18px; letter-spacing:-.5px}
+h1 .dry{background:linear-gradient(120deg, var(--rain) 20%, #E8D9A0 90%);
+  -webkit-background-clip:text; background-clip:text; color:transparent}
+.lede{color:var(--muted); font-size:17.5px; max-width:52ch}
+.herocta{display:flex; gap:14px; margin-top:30px; flex-wrap:wrap}
+/* gauge card */
+.gaugecard{padding:26px; position:relative; overflow:hidden}
+.gaugecard h3{font:600 15px "Sora"; color:var(--muted); letter-spacing:.4px; margin-bottom:14px}
+.gauge{display:flex; gap:22px; align-items:stretch}
+.tube{width:74px; border-radius:37px; border:1px solid var(--edge2); position:relative;
+  background:rgba(4,10,20,.45); overflow:hidden; height:190px}
+.tube .fill{position:absolute; bottom:0; left:0; right:0; height:0%;
+  background:linear-gradient(180deg, rgba(125,211,252,.85), rgba(59,130,246,.55));
+  transition:height 1.2s cubic-bezier(.2,.8,.2,1)}
+.tube .tick{position:absolute; left:0; right:0; border-top:1px dashed rgba(255,255,255,.25)}
+.tube .triggerline{position:absolute; left:-4px; right:-4px; border-top:2px solid var(--amber)}
+.gaugeread{display:flex; flex-direction:column; justify-content:space-between; flex:1}
+.bignum{font:800 40px "Sora"; letter-spacing:-.5px}
+.gaugelabel{color:var(--muted); font-size:13.5px}
+.statrow{display:flex; gap:26px; margin-top:18px; padding-top:16px; border-top:1px solid rgba(255,255,255,.09)}
+.stat .n{font:700 22px "Sora"} .stat .l{font-size:12px; color:var(--faint); letter-spacing:.6px; text-transform:uppercase}
+/* ---- sections ---- */
+section{padding:56px 0}
+h2{font:800 30px "Sora"; letter-spacing:-.3px; margin-bottom:8px}
+.sub{color:var(--muted); margin-bottom:30px; max-width:64ch}
+.steps{display:grid; grid-template-columns:repeat(3,1fr); gap:20px}
+.step{padding:24px}
+.stepnum{width:34px;height:34px;border-radius:10px; display:flex;align-items:center;justify-content:center;
+  font:700 15px "JetBrains Mono"; color:var(--rain);
+  background:rgba(125,211,252,.1); border:1px solid rgba(125,211,252,.3); margin-bottom:14px}
+.step h3{font:600 17px "Sora"; margin-bottom:8px}
+.step p{color:var(--muted); font-size:14.5px}
+/* ---- console ---- */
+.console{padding:0; overflow:hidden}
+.tabs{display:flex; gap:4px; padding:14px 14px 0; border-bottom:1px solid rgba(255,255,255,.08)}
+.tab{padding:11px 20px; border-radius:12px 12px 0 0; color:var(--muted); cursor:pointer;
+  font-weight:600; font-size:14.5px; border:1px solid transparent; border-bottom:none}
+.tab.active{color:var(--text); background:rgba(255,255,255,.07);
+  border-color:rgba(255,255,255,.12)}
+.pane{padding:26px; display:none}
+.pane.active{display:block}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px}
+.field{display:flex; flex-direction:column; gap:6px; margin-bottom:16px}
+.hint{font-size:12.5px; color:var(--faint)}
+.row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+.status{margin-top:16px; padding:12px 16px; border-radius:12px; font-size:14px; display:none}
+.status.show{display:block}
+.status.ok{background:rgba(74,222,128,.09); border:1px solid rgba(74,222,128,.35); color:#C9F5DC}
+.status.err{background:rgba(248,122,122,.09); border:1px solid rgba(248,122,122,.35); color:#F9D4D4}
+.status.info{background:rgba(125,211,252,.08); border:1px solid rgba(125,211,252,.3); color:#D6EEFB}
+.policylist{display:flex; flex-direction:column; gap:12px; margin-top:6px}
+.policyitem{padding:16px 18px; border:1px solid var(--edge); border-radius:14px;
+  background:rgba(255,255,255,.035); display:flex; gap:16px; align-items:center; flex-wrap:wrap}
+.badge{font:700 11.5px "JetBrains Mono"; letter-spacing:1px; padding:5px 10px; border-radius:7px;
+  border:1px solid; text-transform:uppercase}
+.badge.ACTIVE{color:var(--rain); border-color:rgba(125,211,252,.4); background:rgba(125,211,252,.08)}
+.badge.RESOLVED{color:var(--muted); border-color:var(--edge)}
+.badge.PAYOUT{color:var(--payout); border-color:rgba(74,222,128,.45); background:rgba(74,222,128,.08)}
+.badge.NO_PAYOUT{color:#C9D6E4; border-color:var(--edge2)}
+.badge.INCONCLUSIVE{color:var(--amber); border-color:rgba(245,181,74,.45); background:rgba(245,181,74,.08)}
+.policyitem .meta{flex:1; min-width:220px}
+.policyitem .pid{font:600 15px "Sora"}
+.policyitem .det{font-size:13px; color:var(--muted)}
+.resultgrid{margin-top:14px; display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
+.resultcard{padding:12px 14px; border:1px solid var(--edge); border-radius:12px; background:rgba(4,10,20,.4)}
+.resultcard .k{font-size:11px; color:var(--faint); text-transform:uppercase; letter-spacing:.8px}
+.resultcard .v{font:600 15px "JetBrains Mono"; margin-top:3px; word-break:break-all}
+.cites{margin-top:10px; font-size:12.5px; color:var(--muted)}
+.cites li{margin-left:18px}
+/* footer */
+footer{padding:36px 0 60px; color:var(--faint); font-size:13.5px}
+footer .row{justify-content:space-between}
+.toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(90px);
+  background:rgba(10,16,28,.92); border:1px solid var(--edge2); padding:12px 22px;
+  border-radius:12px; z-index:99; transition:transform .3s ease; font-size:14px;
+  backdrop-filter:var(--blur); max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr; padding-top:56px}
+  .steps{grid-template-columns:1fr}
+  .grid2,.grid3{grid-template-columns:1fr}
+  nav{display:none}
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important; transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<div class="sky"></div><div class="clouds"></div><canvas id="rain"></canvas>
+
+<header>
+  <div class="wrap bar">
+    <div class="logo"><span class="drop"></span>RainHedge</div>
+    <nav>
+      <a href="#how">How it works</a>
+      <a href="#console">Open cover</a>
+      <a href="#evidence">Evidence</a>
+    </nav>
+    <div class="row walletchip">
+      <button class="tiny ghost" id="btnWallet">Create wallet</button>
+      <button class="tiny ghost" id="btnFaucet" disabled>Faucet</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- HERO -->
+  <div class="hero">
+    <div>
+      <span class="eyebrow">GenLayer · Studionet · consensus-settled</span>
+      <h1>Insurance against the sky <span class="dry">not falling.</span></h1>
+      <p class="lede">RainHedge is parametric drought cover: pick a real rainfall
+      window at a real location, pin its exact weather record on-chain, and if
+      every pinned week stays under your trigger, the contract pays you —
+      no claims adjuster, no paperwork. Validators re-measure the pinned
+      bytes under consensus; the model never decides, it only witnesses.</p>
+      <div class="herocta">
+        <a href="#console"><button class="primary">Open a policy</button></a>
+        <a href="#how"><button class="ghost">How consensus settles it</button></a>
+      </div>
+    </div>
+    <div class="glass gaugecard">
+      <h3>Live rain gauge — latest resolved policy</h3>
+      <div class="gauge">
+        <div class="tube">
+          <div class="fill" id="gaugeFill"></div>
+          <div class="triggerline" id="gaugeTrigger" style="bottom:60%"></div>
+        </div>
+        <div class="gaugeread">
+          <div>
+            <div class="bignum" id="gaugeMM">—</div>
+            <div class="gaugelabel">mm measured over the pinned window</div>
+          </div>
+          <div>
+            <div class="gaugelabel">trigger <b class="mono" id="gaugeTrig">—</b> ·
+              verdict <span class="badge" id="gaugeVerdict">—</span></div>
+            <div class="gaugelabel mono" id="gaugeWindow" style="margin-top:6px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="statrow">
+        <div class="stat"><div class="n" id="stTotal">0</div><div class="l">policies</div></div>
+        <div class="stat"><div class="n" id="stPayout">0</div><div class="l">payouts</div></div>
+        <div class="stat"><div class="n" id="stNo">0</div><div class="l">refunds</div></div>
+        <div class="stat"><div class="n" id="stInc">0</div><div class="l">inconclusive</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW -->
+  <section id="how">
+    <h2>Three steps, settled by consensus</h2>
+    <p class="sub">The covered windows are historical: the weather is already
+    final when you open cover. That is the point — the chain measures
+    byte-pinned records, so nobody can reinterpret the weather afterwards.</p>
+    <div class="steps">
+      <div class="glass step">
+        <div class="stepnum">01</div>
+        <h3>Underwrite</h3>
+        <p>Pick a location and 1–4 historical weekly windows. The dApp fetches
+        the Open-Meteo Archive record for each, canonicalizes it (timing field
+        stripped, numbers normalized, sorted-key JSON) and commits its sha256
+        on-chain with your trigger and payout.</p>
+      </div>
+      <div class="glass step">
+        <div class="stepnum">02</div>
+        <h3>Fund</h3>
+        <p>Pay the premium as a real value transfer into the contract escrow.
+        Coverage, trigger and payout percentage were locked at step 01 —
+        the premium is the only thing that moves.</p>
+      </div>
+      <div class="glass step">
+        <div class="stepnum">03</div>
+        <h3>Resolve</h3>
+        <p>After the challenge window, validators re-fetch the pinned URLs,
+        re-verify every sha256, re-measure totals in exact integer math, and
+        witness the records. Every window under trigger = PAYOUT; anything
+        else fails closed and your premium stays claimable.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONSOLE -->
+  <section id="console">
+    <h2>Cover console</h2>
+    <p class="sub">Everything below talks to the live contract on Studionet.
+    Burner wallets are generated in your browser and never leave it.</p>
+    <div class="glass console">
+      <div class="tabs">
+        <div class="tab active" data-pane="paneOpen">Open policy</div>
+        <div class="tab" data-pane="paneFund">Fund</div>
+        <div class="tab" data-pane="paneResolve">Resolve</div>
+        <div class="tab" data-pane="paneView">View</div>
+      </div>
+
+      <!-- OPEN -->
+      <div class="pane active" id="paneOpen">
+        <div class="grid2">
+          <div class="field"><label>Latitude</label>
+            <input id="lat" value="-6.2"><span class="hint">-89.5 .. 89.5</span></div>
+          <div class="field"><label>Longitude</label>
+            <input id="lon" value="106.82"><span class="hint">-179.5 .. 179.5</span></div>
+        </div>
+        <div class="field"><label>Policy id</label>
+          <input id="pid" class="mono" placeholder="my-rain-cover"></div>
+        <div class="grid3">
+          <div class="field"><label>Window 1 start</label><input id="w1s" type="date" value="2026-03-09"></div>
+          <div class="field"><label>Window 1 end</label><input id="w1e" type="date" value="2026-03-15"></div>
+          <div class="field"><label>Optional window 2 (start / end)</label>
+            <div class="row"><input id="w2s" type="date" value="2026-05-25">
+            <input id="w2e" type="date" value="2026-05-31"></div></div>
+        </div>
+        <div class="grid3">
+          <div class="field"><label>Trigger (mm total/week)</label>
+            <input id="trigger" value="35"><span class="hint">payout if EVERY window is below this</span></div>
+          <div class="field"><label>Payout % of coverage</label>
+            <input id="payoutpct" value="80"></div>
+          <div class="field"><label>Buyer address</label>
+            <input id="buyer" class="mono" placeholder="create a wallet first"></div>
+        </div>
+        <div class="grid3">
+          <div class="field"><label>Coverage (wei)</label>
+            <input id="coverage" value="100000000000000000"></div>
+          <div class="field"><label>Premium (wei)</label>
+            <input id="premium" value="10000000000000000"></div>
+          <div class="field"><label>Challenge window (s)</label>
+            <input id="challenge" value="300"></div>
+        </div>
+        <div class="row">
+          <button class="primary" id="btnOpen">Fetch records &amp; open policy</button>
+          <span class="hint" id="pinPreview"></span>
+        </div>
+        <div class="status" id="stOpen"></div>
+      </div>
+
+      <!-- FUND -->
+      <div class="pane" id="paneFund">
+        <div class="grid2">
+          <div class="field"><label>Policy id</label><input id="fundPid" class="mono"></div>
+          <div class="field"><label>Premium (wei, sent exactly)</label>
+            <input id="fundAmt" class="mono" value="10000000000000000"></div>
+        </div>
+        <button class="primary" id="btnFund">Send premium</button>
+        <div class="status" id="stFund"></div>
+      </div>
+
+      <!-- RESOLVE -->
+      <div class="pane" id="paneResolve">
+        <div class="row" style="justify-content:space-between">
+          <p class="hint" style="max-width:60ch">Resolving burns one consensus
+          round (~60–90 s). The challenge window (min 300 s) must have elapsed
+          since opening.</p>
+          <button class="ghost" id="btnRefresh">Refresh list</button>
+        </div>
+        <div class="policylist" id="policyList"></div>
+        <div class="status" id="stResolve"></div>
+      </div>
+
+      <!-- VIEW -->
+      <div class="pane" id="paneView">
+        <div class="field" style="max-width:420px"><label>Policy id</label>
+          <input id="viewPid" class="mono"></div>
+        <button class="ghost" id="btnView">Load policy</button>
+        <div id="viewOut" style="margin-top:16px"></div>
+        <div class="status" id="stView"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EVIDENCE -->
+  <section id="evidence">
+    <h2>Evidence</h2>
+    <p class="sub">Live deployment artifacts — verify everything yourself.</p>
+    <div class="glass step">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div class="hint">Contract (Studionet)</div>
+          <div class="mono" id="contractAddr" style="font-size:14px">—</div>
+        </div>
+        <div class="row">
+          <a id="explorerLink" href="#" target="_blank" rel="noopener"><button class="tiny ghost">Explorer ↗</button></a>
+          <a href="https://github.com/faisalnugroho/rainhedge" target="_blank" rel="noopener"><button class="tiny ghost">Repo ↗</button></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer><div class="wrap row">
+  <span>RainHedge — parametric cover is a measurement of pinned records,
+  not a promise about future weather. INCONCLUSIVE never takes your premium.</span>
+  <span class="mono" id="buildTag"></span>
+</div></footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="genlayer-sdk.bundle.js"></script>
+<script>
+"use strict";
+/* ================= contract binding ================= */
+const CONTRACT = "0xd69079Eea6fA7D75F4355B42b08E08560fdBCD9b";
+const SDK = window.GenLayerSDK;
+const $ = id => document.getElementById(id);
+const BUILD = "frontend @ initial";
+
+/* ================= canonicalization (MUST equal the contract) ===== */
+function stripTimingAndSort(parsed){
+  delete parsed.generationtime_ms;
+  function norm(v){
+    if (typeof v === "number" && Number.isInteger(v)) return v;
+    if (typeof v === "number" && Number.isFinite(v) && Number.isInteger(v)) return v;
+    if (Array.isArray(v)) return v.map(norm);
+    if (v && typeof v === "object"){
+      const out = {};
+      for (const k of Object.keys(v).sort()) out[k] = norm(v[k]);
+      return out;
+    }
+    return v;
+  }
+  return norm(parsed);
+}
+function canonicalJson(text){
+  return JSON.stringify(stripTimingAndSort(JSON.parse(text)));
+}
+async function sha256Hex(str){
+  const buf = new TextEncoder().encode(str);
+  const dig = await crypto.subtle.digest("SHA-256", buf);
+  return [...new Uint8Array(dig)].map(b => b.toString(16).padStart(2,"0")).join("");
+}
+function recordUrl(lat, lon, w){
+  return "https://archive-api.open-meteo.com/v1/archive?"
+    + "latitude=" + lat + "&longitude=" + lon
+    + "&start_date=" + w[0] + "&end_date=" + w[1]
+    + "&daily=precipitation_sum&timezone=GMT";
+}
+async function pinWindow(lat, lon, w){
+  const url = recordUrl(lat, lon, w);
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("record fetch failed: HTTP " + res.status);
+  const canon = canonicalJson(await res.text());
+  return { url, digest: await sha256Hex(canon) };
+}
+
+/* ================= atmosphere: canvas rain ================= */
+(function(){
+  const cv = $("rain"), ctx = cv.getContext("2d");
+  let drops = [], W, H;
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function size(){ W = cv.width = innerWidth; H = cv.height = innerHeight;
+    drops = Array.from({length: Math.min(140, W/9)}, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      l: 9+Math.random()*16, v: 5+Math.random()*7, o: .12+Math.random()*.25 }));}
+  size(); addEventListener("resize", size);
+  if (reduced) return;
+  (function tick(){
+    ctx.clearRect(0,0,W,H);
+    ctx.lineWidth = 1;
+    for (const d of drops){
+      ctx.strokeStyle = "rgba(125,211,252," + d.o + ")";
+      ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x-1.4, d.y+d.l); ctx.stroke();
+      d.y += d.v; d.x -= .35;
+      if (d.y > H){ d.y = -20; d.x = Math.random()*W; }
+    }
+    requestAnimationFrame(tick);
+  })();
+})();
+
+/* ================= ui helpers ================= */
+let toastTimer;
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove("show"), 4200);
+}
+function setStatus(id, kind, msg){
+  const el = $(id); el.className = "status show " + kind; el.textContent = msg;
+}
+document.querySelectorAll(".tab").forEach(tab => tab.addEventListener("click", () => {
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".pane").forEach(p=>p.classList.remove("active"));
+  tab.classList.add("active"); $(tab.dataset.pane).classList.add("active");
+}));
+
+/* ================= wallet ================= */
+const w = { account: null, key: null };
+function saveWallet(){ localStorage.setItem("rainhedge_wallet",
+  JSON.stringify({ key: w.key })); }
+function walletLabel(){ return w.account ? w.account.address.slice(0,10) + "…" + w.account.address.slice(-6) : null; }
+function refreshWalletUi(){
+  $("btnWallet").textContent = w.account ? walletLabel() : "Create wallet";
+  $("btnFaucet").disabled = !w.account;
+  if (w.account) $("buyer").value = w.account.address;
+}
+function createWallet(){
+  w.key = SDK.generatePrivateKey();
+  w.account = SDK.createAccount(w.key);
+  saveWallet(); refreshWalletUi();
+  toast("Burner wallet created: " + walletLabel());
+}
+function client(){
+  if (!w.account){ toast("Create a wallet first"); return null; }
+  return SDK.createClient({ chain: SDK.studionet, account: w.account });
+}
+$("btnWallet").addEventListener("click", createWallet);
+$("btnFaucet").addEventListener("click", async () => {
+  const c = client(); if (!c) return;
+  try{
+    await c.request({ method: "sim_fundAccount", params: [w.account.address, 5e18] });
+    toast("Faucet sent 5 GEN to " + walletLabel());
+  }catch(e){ toast("Faucet failed: " + e.message); }
+});
+
+/* ================= tx plumbing (never trust the receipt alone) ====== */
+async function sendWrite(fn, args, value){
+  const c = client(); if (!c) throw new Error("no wallet");
+  const hash = await c.writeContract({ address: CONTRACT, functionName: fn,
+    args, account: w.account, value: value || 0 });
+  let receipt = null;
+  try{
+    receipt = await Promise.race([
+      c.waitForTransactionReceipt({ hash, status: SDK.TransactionStatus.ACCEPTED,
+        interval: 5000, retries: 40 }),
+      new Promise((_, rej) => setTimeout(()=>rej(new Error("receipt timeout")), 200000))
+    ]);
+  }catch(e){ /* fall through to state poll */ }
+  const leader = receipt && receipt.consensus_data && receipt.consensus_data.leader_receipt;
+  const exec = Array.isArray(leader) && leader.length ? leader[0].execution_result : undefined;
+  if (exec === "FAILURE" || exec === "ERROR"){
+    const stderr = String((leader[0] && leader[0].genvm_result && leader[0].genvm_result.stderr) || "");
+    const reason = (stderr.match(/UserError\(message='([^']+)'\)/) ||
+                    stderr.match(/AssertionError: (.+)/) || [])[1];
+    throw new Error(reason ? ("contract: " + reason) : (fn + " reverted on chain"));
+  }
+  return hash;
+}
+async function readView(fn, args){
+  const c = client() || SDK.createClient({ chain: SDK.studionet });
+  const raw = await c.readContract({ address: CONTRACT, functionName: fn, args });
+  return JSON.parse(typeof raw === "string" ? raw : String(raw));
+}
+
+/* ================= open policy ================= */
+function collectWindows(){
+  const ws = [[$("w1s").value, $("w1e").value]];
+  if ($("w2s").value && $("w2e").value) ws.push([$("w2s").value, $("w2e").value]);
+  for (const [s,e] of ws)
+    if (!s || !e || s > e) throw new Error("window dates invalid: " + s + " .. " + e);
+  return ws;
+}
+$("btnOpen").addEventListener("click", async () => {
+  const st = $("stOpen");
+  try{
+    if (!w.account) throw new Error("create a wallet first");
+    const lat = $("lat").value.trim(), lon = $("lon").value.trim();
+    const pid = $("pid").value.trim();
+    if (!/^[a-z0-9-]{3,40}$/.test(pid)) throw new Error("policy id: 3-40 chars a-z0-9-");
+    const ws = collectWindows();
+    setStatus("stOpen","info","Fetching " + ws.length + " record(s) & building pins…");
+    const pins = [];
+    for (const win of ws) pins.push(await pinWindow(lat, lon, win));
+    $("pinPreview").textContent = pins.map(p=>p.digest.slice(0,10)+"…").join("  ");
+    setStatus("stOpen","info","Pins ready — opening policy on-chain…");
+    const hash = await sendWrite("open_policy", [pid, w.account.address, lat, lon,
+      1, $("trigger").value.trim(), parseInt($("payoutpct").value,10),
+      $("coverage").value.trim(), $("premium").value.trim(),
+      JSON.stringify(pins), parseInt($("challenge").value,10)]);
+    setStatus("stOpen","ok","Policy opened. tx " + hash.slice(0,18) + "… — next: Fund tab.");
+    toast("Policy " + pid + " opened");
+    refreshList();
+  }catch(e){ setStatus("stOpen","err", e.message); }
+});
+
+/* ================= fund ================= */
+$("btnFund").addEventListener("click", async () => {
+  try{
+    const hash = await sendWrite("fund_policy", [$("fundPid").value.trim()],
+      String($("fundAmt").value.trim()));
+    setStatus("stFund","ok","Premium escrowed. tx " + hash.slice(0,18) + "…");
+  }catch(e){ setStatus("stFund","err", e.message); }
+});
+
+/* ================= resolve + list ================= */
+function policyRow(p){
+  const res = p.result || {};
+  const v = res.verdict;
+  const div = document.createElement("div");
+  div.className = "policyitem";
+  const badge = v ? '<span class="badge ' + v + '">' + v + '</span>'
+                  : '<span class="badge ' + p.status + '">' + p.status + '</span>';
+  div.innerHTML =
+    '<div class="meta"><div class="pid mono">' + p.id + '</div>' +
+    '<div class="det">trigger ' + p.trigger_mm + ' mm · payout ' + p.payout_pct +
+    '% · ' + (p.windows||[]).map(w2=>w2[0]+"→"+w2[1]).join(" · ") + '</div>' +
+    '<div class="det mono" style="margin-top:4px">premium ' + p.premium_wei +
+    ' wei' + (p.paid_wei && p.paid_wei !== "0" ? ' · paid ' + p.paid_wei : '') +
+    (p.claimable_wei && p.claimable_wei !== "0" ? ' · claimable ' + p.claimable_wei : '') +
+    '</div></div>' + badge;
+  const actions = document.createElement("div");
+  actions.className = "row";
+  const bView = document.createElement("button");
+  bView.className = "tiny ghost"; bView.textContent = "Details";
+  bView.addEventListener("click", () => { $("viewPid").value = p.id; showPolicy(p); });
+  actions.appendChild(bView);
+  if (p.status === "ACTIVE"){
+    const bRes = document.createElement("button");
+    bRes.className = "tiny primary"; bRes.textContent = "Resolve";
+    bRes.addEventListener("click", () => doResolve(p.id, bRes));
+    actions.appendChild(bRes);
+  }
+  if (p.status === "RESOLVED" && parseInt(p.claimable_wei || "0",10) > 0){
+    const bClaim = document.createElement("button");
+    bClaim.className = "tiny"; bClaim.textContent = "Claim refund";
+    bClaim.addEventListener("click", () => doClaim(p.id, bClaim));
+    actions.appendChild(bClaim);
+  }
+  div.appendChild(actions);
+  return div;
+}
+async function doResolve(pid, btn){
+  btn.disabled = true; btn.textContent = "Resolving…";
+  setStatus("stResolve","info","Consensus round for " + pid + " — 60–90 s. You can keep browsing this page.");
+  try{
+    const hash = await sendWrite("resolve_policy", [pid]);
+    const p = await readView("get_policy", [pid]);
+    const v = (p.result || {}).verdict || "UNKNOWN";
+    setStatus("stResolve","ok", pid + " resolved: " + v + " · tx " + hash.slice(0,18) + "…");
+    toast(pid + " → " + v);
+    refreshList(); refreshHero();
+  }catch(e){
+    setStatus("stResolve","err", e.message);
+    refreshList();
+  }
+}
+async function doClaim(pid, btn){
+  btn.disabled = true;
+  try{
+    const hash = await sendWrite("claim_refund", [pid]);
+    setStatus("stResolve","ok","Refund claimed. tx " + hash.slice(0,18) + "…");
+    refreshList();
+  }catch(e){ setStatus("stResolve","err", e.message); btn.disabled = false; }
+}
+async function refreshList(){
+  try{
+    const ids = await readView("list_policies", []);
+    const box = $("policyList"); box.innerHTML = "";
+    for (const pid of [].concat(ids).reverse()){
+      try{ box.appendChild(policyRow(await readView("get_policy", [pid]))); }
+      catch(e){ /* skip transient */ }
+    }
+    if (!ids.length) box.innerHTML = '<p class="hint">No policies yet — open the first one.</p>';
+  }catch(e){ $("policyList").innerHTML = '<p class="hint">List unavailable: '+e.message+'</p>'; }
+}
+$("btnRefresh").addEventListener("click", refreshList);
+
+/* ================= view ================= */
+function showPolicy(p){
+  const res = p.result || {};
+  const v = res.verdict;
+  $("viewOut").innerHTML =
+    '<div class="policyitem" style="display:block">' +
+    '<div class="row" style="justify-content:space-between">' +
+    '<div class="pid mono">' + p.id + '</div>' +
+    (v ? '<span class="badge '+v+'">'+v+'</span>' : '<span class="badge '+p.status+'">'+p.status+'</span>') +
+    '</div>' +
+    '<div class="resultgrid">' +
+      card("buyer", p.buyer) + card("trigger", p.trigger_mm + " mm") +
+      card("payout", p.payout_pct + "%") +
+      card("coverage", p.coverage_wei + " wei") +
+      card("windows", (p.windows||[]).map(w2=>w2[0]+"→"+w2[1]).join(" · ")) +
+      card("totals mm", (res.totals_mm||[]).join(" | ") || "—") +
+      card("paid", (p.paid_wei||"0") + " wei") +
+      card("claimable", (p.claimable_wei||"0") + " wei") +
+    '</div>' +
+    (res.labels ? '<div class="cites">witness labels: <b class="mono">' + res.labels.join(", ") + '</b></div>' : '') +
+    (res.citations && res.citations.length ? '<div class="cites">citations:<ul>' +
+      res.citations.map(c=>'<li class="mono">[' + c.source + '] “' + c.quote + '”</li>').join("") +
+      '</ul></div>' : '') +
+    (res.reason ? '<div class="cites">“' + res.reason + '”</div>' : '') +
+    '</div>';
+  function card(k, vv){ return '<div class="resultcard"><div class="k">'+k+'</div><div class="v">'+vv+'</div></div>'; }
+}
+$("btnView").addEventListener("click", async () => {
+  try{ showPolicy(await readView("get_policy", [$("viewPid").value.trim()])); }
+  catch(e){ setStatus("stView","err", e.message); }
+});
+
+/* ================= hero stats + gauge ================= */
+async function refreshHero(){
+  try{
+    const stats = await readView("get_stats", []);
+    $("stTotal").textContent = stats.total;
+    $("stPayout").textContent = stats.payout;
+    $("stNo").textContent = stats.no_payout;
+    $("stInc").textContent = stats.inconclusive;
+  }catch(e){}
+  try{
+    const ids = [].concat(await readView("list_policies", []));
+    for (const pid of ids.reverse()){
+      const p = await readView("get_policy", [pid]);
+      const res = p.result || {};
+      if (res.verdict && res.verdict !== "INCONCLUSIVE" && (res.totals_mm||[]).length){
+        const maxmm = Math.max.apply(null, res.totals_mm.map(parseFloat));
+        const trig = parseFloat(p.trigger_mm);
+        $("gaugeMM").textContent = maxmm.toFixed(1);
+        $("gaugeTrig").textContent = trig.toFixed(1) + " mm";
+        $("gaugeWindow").textContent = (p.windows||[]).map(w2=>w2[0]+"→"+w2[1]).join(" · ");
+        const gv = $("gaugeVerdict"); gv.textContent = res.verdict;
+        gv.className = "badge " + res.verdict;
+        const pct = Math.max(4, Math.min(100, (maxmm / Math.max(trig,1)) * 100));
+        $("gaugeFill").style.height = pct + "%";
+        $("gaugeTrigger").style.bottom = "calc(" + Math.min(96,(trig / Math.max(Math.max(trig, maxmm), trig) * 100)) + "% - 1px)";
+        break;
+      }
+    }
+  }catch(e){}
+}
+
+/* ================= boot ================= */
+(async function boot(){
+  $("contractAddr").textContent = CONTRACT;
+  $("explorerLink").href = "https://explorer-studio.genlayer.com/address/" + CONTRACT;
+  $("buildTag").textContent = BUILD;
+  const saved = localStorage.getItem("rainhedge_wallet");
+  if (saved){ try{ w.key = JSON.parse(saved).key;
+    w.account = SDK.createAccount(w.key); }catch(e){} }
+  refreshWalletUi();
+  refreshHero(); refreshList();
+  setInterval(refreshList, 30000);
+})();
+</script>
+</body>
+</html>
