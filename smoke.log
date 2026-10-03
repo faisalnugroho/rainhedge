@@ -1,6 +1,6 @@
 deployer: 0x8183965AD0A53EebcD1869C93d794733291cfD10
 [deploy] vote=MAJORITY_AGREE exec=SUCCESS ok=True
-CONTRACT: 0x18ADC34Ee1069AaC0CA9dF04324E3c6A9D2C90Dc
+CONTRACT: 0x57806f65a48bEA713500b79E06F6b0D018fcFFcb
 == preflight (canonical digests over live records) ==
 preflight ok: ('2026-03-09', '2026-03-15') 347 bytes  sha 6352e857fe03
 preflight ok: ('2026-05-25', '2026-05-31') 343 bytes  sha 7bb5eb868f1c
@@ -10,17 +10,25 @@ preflight ok: ('2026-02-02', '2026-02-08') 351 bytes  sha f895e2a5e85d
 [fund#drought-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
 [drought-1] challenge window: sleeping 320s...
 [resolve#drought-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
-drought-1: INCONCLUSIVE totals=[]
+drought-1: PAYOUT totals=['9.300000', '9.500000']
 [open#drought-2] vote=MAJORITY_AGREE exec=SUCCESS ok=True
 [fund#drought-2] vote=MAJORITY_AGREE exec=SUCCESS ok=True
 [drought-2] challenge window: sleeping 320s...
 [resolve#drought-2] vote=MAJORITY_AGREE exec=SUCCESS ok=True
-drought-2: INCONCLUSIVE totals=[]
+drought-2: PAYOUT totals=['9.300000', '9.500000']
 [open#drought-3] vote=MAJORITY_AGREE exec=SUCCESS ok=True
 [fund#drought-3] vote=MAJORITY_AGREE exec=SUCCESS ok=True
 [drought-3] challenge window: sleeping 320s...
 [resolve#drought-3] vote=MAJORITY_AGREE exec=SUCCESS ok=True
-drought-3: INCONCLUSIVE totals=[]
-DETERMINISM: ['INCONCLUSIVE', 'INCONCLUSIVE', 'INCONCLUSIVE'] consistent: False
+drought-3: PAYOUT totals=['9.300000', '9.500000']
+DETERMINISM: ['PAYOUT', 'PAYOUT', 'PAYOUT'] consistent: True
 [open#rain-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
 [fund#rain-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[resolve#rain-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+rain-1: NO_PAYOUT totals=['83.000000', '82.200000']
+[open#tamper-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[fund#tamper-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[resolve#tamper-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+tamper-1: INCONCLUSIVE totals=[]
+DONE. contract: 0x57806f65a48bEA713500b79E06F6b0D018fcFFcb
+EXIT=0

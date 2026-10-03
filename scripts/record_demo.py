@@ -22,7 +22,7 @@ _html = Path(__file__).resolve().parents[1].joinpath(
     "frontend/index.html").read_text()
 _m = re.search(r'const CONTRACT = "(0x[0-9a-fA-F]{40})"', _html)
 CONTRACT = _m.group(1) if _m else \
-    "0xd69079Eea6fA7D75F4355B42b08E08560fdBCD9b"
+    "0x57806f65a48bEA713500b79E06F6b0D018fcFFcb"
 PID = "video-demo-" + time.strftime("%H%M%S")
 SHOT = lambda name: str(OUT / (name + ".png"))
 LAT, LON = "-6.2", "106.82"
