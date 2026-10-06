@@ -65,7 +65,8 @@ live against the dApp.
 - Live explorer (contract):
   https://explorer-studio.genlayer.com/address/0xA0E9fA8a3F9fd44e16C0dBE498A91609f3ea3F88
 - dApp: https://faisalnugroho.github.io/rainhedge/
-- Video demo (≤30 s): attached
+- Video demo (26.6 s, in-repo):
+  https://github.com/faisalnugroho/rainhedge/raw/main/docs/rainhedge-demo.mp4
 - Evidence: docs/EVIDENCE.md + docs/deployment_log.json in the repo
 
 ## Key evidence (Studionet, chain-authoritative)
