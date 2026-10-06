@@ -272,12 +272,21 @@ def test_open_five_pins_reverts(c, direct_vm, direct_alice):
                                 pin(W1)])))
 
 
-def test_stats_and_exposure_after_open(c, direct_vm, direct_alice):
+def test_stats_and_exposure_after_fund(c, direct_vm, direct_alice):
+    """Exposure and the bounded registry count only FUNDED policies —
+    free opens must not be able to crowd out the registry (griefing)."""
     direct_vm.sender = direct_alice
     c.open_policy(**policy_json(buyer=direct_alice.as_hex))
+    assert json.loads(c.list_policies()) == []
+    assert json.loads(c.get_exposure())['total_exposure_wei'] == '0'
+    direct_vm.deal(direct_vm._to_bytes(direct_vm._contract_address),
+                   int(PREMIUM_WEI))
+    direct_vm.value = int(PREMIUM_WEI)
+    c.fund_policy('policy-1')
+    direct_vm.value = 0
+    assert json.loads(c.list_policies()) == ['policy-1']
     assert json.loads(c.get_exposure())['total_exposure_wei'] == \
         COVERAGE_WEI
-    assert json.loads(c.list_policies()) == ['policy-1']
 
 
 # ---------------- funding guards ----------------
@@ -386,6 +395,12 @@ def test_rain_no_payout_refunds_premium(c, direct_vm, direct_alice):
     assert p['result']['verdict'] == 'NO_PAYOUT'
     assert p['result']['totals_mm'] == ['60.900000', '60.900000']
     assert p['paid_wei'] == '0'
+    # regression: the full refund goes out with the settle; nothing may
+    # stay claimable or claim_refund would double-draw the premium
+    assert p['claimable_wei'] == '0'
+    direct_vm.sender = direct_alice
+    with direct_vm.expect_revert('nothing_claimable'):
+        c.claim_refund('policy-1')
     assert stats(c)['no_payout'] == 1
 
 

@@ -1,2 +1,3 @@
 scripts/smoke_deployer.json
 __pycache__/
+.venv/

@@ -538,16 +538,15 @@ class RainHedge(gl.Contract):
             "challenge_deadline": now + challenge_seconds,
             "days": days,
             "result": {}})
-        ids = json.loads(self.ids)
-        require(len(ids) < MAX_POLICIES, "registry_full")
-        ids.append(policy_id)
-        self.ids = json.dumps(ids)
-        self.total_exposure_wei = str(int(self.total_exposure_wei) + cov)
         PolicyOpenedEvent(policy_id, buyer=buyer_addr, coverage_wei=cov,
                           premium_wei=prem).emit()
 
     @gl.public.write.payable
     def fund_policy(self, policy_id: str) -> None:
+        # Funding is the admitted stake: only funded policies enter the
+        # registry and the exposure cap, so free opens can never crowd out
+        # the bounded registry (griefing guard). All checks precede all
+        # state changes.
         record = self._policy(policy_id)
         require(record["status"] == "ACTIVE", "policy_not_active")
         require(int(record["balance_wei"]) == 0, "already_funded")
@@ -558,6 +557,15 @@ class RainHedge(gl.Contract):
         if sent != premium:
             require(False, "send exactly the premium (" + str(premium)
                     + " wei); sent " + str(sent))
+        ids = json.loads(self.ids)
+        require(len(ids) < MAX_POLICIES, "registry_full")
+        exposure = int(self.total_exposure_wei) \
+            + int(record["coverage_wei"])
+        require(exposure <= MAX_TOTAL_WEI, "exposure_cap_reached")
+        # ---- effects ----
+        ids.append(policy_id)
+        self.ids = json.dumps(ids)
+        self.total_exposure_wei = str(exposure)
         record["balance_wei"] = str(premium)
         self._save(record)
         PolicyFundedEvent(policy_id, premium_wei=premium).emit()
@@ -670,8 +678,12 @@ class RainHedge(gl.Contract):
             SettledEvent(policy_id, verdict=verdict, amount_wei=paid,
                          to=record["buyer"]).emit()
         elif verdict == "NO_PAYOUT":
+            # The premium is refunded IN FULL right here; nothing may stay
+            # claimable, or claim_refund could draw the same premium a
+            # second time out of the shared escrow (fund-loss regression:
+            # live smoke rain-1 exposed the double-claim window).
             record["paid_wei"] = "0"
-            record["claimable_wei"] = str(amount)
+            record["claimable_wei"] = "0"
             self._save(record)
             self._transfer(record["buyer"], amount)
             SettledEvent(policy_id, verdict=verdict, refunded_wei=amount,

@@ -46,7 +46,9 @@ closed to INCONCLUSIVE, where the premium stays claimable by the buyer.
 Fail-closed: missing/tampered/unparseable records, model dissent, or a
 failed consensus round all yield INCONCLUSIVE — `claim_refund` returns
 the premium to the buyer, unproven never silently converts into a kept
-premium.
+premium. NO_PAYOUT refunds the premium in full as part of settlement
+(nothing stays claimable — a double-claim path found in a live smoke
+and closed by regression test).
 
 **Underwriting binding:** the pin digests are committed in `open_policy`
 BEFORE funding. `test_digest_binding_dry_pin_wet_bytes` proves the
@@ -56,7 +58,7 @@ would have paid.
 
 ## Live deployment (Studionet)
 
-- Contract: `0xd69079Eea6fA7D75F4355B42b08E08560fdBCD9b`
+- Contract: `0xA0E9fA8a3F9fd44e16C0dBE498A91609f3ea3F88`
 - Deployer: `0x8183965AD0A53EebcD1869C93d794733291cfD10`
 - Deploy tx + deployed-code identity in `docs/deployment_log.json`
   (sha256 of the deployed `contract_code` == sha256 of
