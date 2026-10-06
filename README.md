@@ -79,7 +79,8 @@ would have paid.
     (9.3 mm and 9.5 mm total vs 35 mm trigger) → **PAYOUT ×3, identical
     totals, single consensus round each** (determinism)
   - rain-refund ×1 — pins over wet weeks (83.0 / 82.2 mm) →
-    **NO_PAYOUT**, premium refunded via emit_transfer
+    **NO_PAYOUT**, premium refunded in full via emit_transfer
+    (`claimable_wei = 0` — the v2 double-claim fix, verified live)
   - tampered-pin ×1 — one pin's digest commits to different window bytes
     → **INCONCLUSIVE** (fail-closed over valid-looking data)
 - Browser E2E on the live dApp: burner wallet → faucet → open → fund →
