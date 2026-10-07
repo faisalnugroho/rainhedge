@@ -560,3 +560,77 @@ def test_claim_refund_requires_buyer(funded, direct_vm, direct_bob):
 def test_claim_refund_before_resolve_reverts(funded, direct_vm):
     with direct_vm.expect_revert('not_resolved'):
         funded.claim_refund('policy-1')
+
+
+# ---------------- evidence robustness (final-audit regressions) ----------------
+
+def _open_second_policy(funded, direct_vm, direct_alice, days_json):
+    """Open + fund 'policy-2' for the same buyer as the fixture policy."""
+    buyer = json.loads(funded.get_policy('policy-1'))['buyer']
+    direct_vm.sender = direct_alice
+    funded.open_policy(**policy_json(policy_id='policy-2', buyer=buyer,
+                                     days_json=days_json))
+    direct_vm.value = int(PREMIUM_WEI)
+    funded.fund_policy('policy-2')
+    direct_vm.value = 0
+
+
+def test_evidence_malformed_json_with_matching_digest_inconclusive(
+        funded, direct_vm, direct_alice):
+    """Pin commits to MALFORMED bytes and the source serves exactly those
+    bytes: the digest matches, but the record cannot be canonicalized ->
+    fail-closed INCONCLUSIVE with the premium claimable."""
+    malformed = '{"daily": {"time": ['  # unparseable JSON
+    _open_second_policy(funded, direct_vm, direct_alice,
+                        json.dumps([{'url': url(W1), 'digest': sha(malformed)},
+                                    pin(W2)]))
+    warp(direct_vm)
+    mock_llm_ok(direct_vm)
+    direct_vm.mock_web(r'records/2026-03-09',
+                       {'status': 200, 'body': malformed})
+    direct_vm.mock_web(r'.*', {'status': 200, 'body': canon(W2)})
+    funded.resolve_policy('policy-2')
+    p = json.loads(funded.get_policy('policy-2'))
+    assert p['result']['verdict'] == 'INCONCLUSIVE'
+    assert p['result']['totals_mm'] == []
+    assert p['claimable_wei'] == PREMIUM_WEI
+
+
+def test_evidence_wrong_dates_with_matching_digest_inconclusive(
+        funded, direct_vm, direct_alice):
+    """Pin and served bytes agree (digest matches) but the record's date
+    list does not match the URL-named window: record_window_mismatch ->
+    fail-closed INCONCLUSIVE even though the data itself looks valid."""
+    shifted = canon(W3)  # valid record, but for 2026-09-07..13
+    _open_second_policy(funded, direct_vm, direct_alice,
+                        json.dumps([{'url': url(W1), 'digest': sha(shifted)},
+                                    pin(W2)]))
+    warp(direct_vm)
+    mock_llm_ok(direct_vm)
+    direct_vm.mock_web(r'records/2026-03-09',
+                       {'status': 200, 'body': shifted})
+    direct_vm.mock_web(r'.*', {'status': 200, 'body': canon(W2)})
+    funded.resolve_policy('policy-2')
+    p = json.loads(funded.get_policy('policy-2'))
+    assert p['result']['verdict'] == 'INCONCLUSIVE'
+    assert p['result']['totals_mm'] == []
+
+
+def test_exact_threshold_total_equal_trigger_no_payout(
+        funded, direct_vm, direct_alice):
+    """Parametric boundary: a window total EXACTLY equal to the trigger is
+    NOT a drought (payout requires STRICTLY below) -> NO_PAYOUT with the
+    premium refunded in full."""
+    exact = [5.0] * 7  # sums to exactly 35.0 mm == trigger
+    _open_second_policy(funded, direct_vm, direct_alice,
+                        json.dumps([pin(W1, sha(canon(W1, exact))),
+                                    pin(W2, sha(canon(W2, exact)))]))
+    warp(direct_vm)
+    mock_llm_ok(direct_vm)
+    mock_web_pair(direct_vm, canon(W1, exact), canon(W2, exact))
+    funded.resolve_policy('policy-2')
+    p = json.loads(funded.get_policy('policy-2'))
+    assert p['result']['verdict'] == 'NO_PAYOUT'
+    assert p['result']['totals_mm'] == ['35.000000', '35.000000']
+    assert p['claimable_wei'] == '0'
+    assert stats(funded)['no_payout'] == 1

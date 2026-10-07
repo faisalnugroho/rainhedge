@@ -71,7 +71,7 @@ would have paid.
 
 ## Verification summary (tx hashes in docs/deployment_log.json)
 
-- 45/45 direct-mode GenVM tests (web/LLM boundaries mocked) — local AND
+- 48/48 direct-mode GenVM tests (web/LLM boundaries mocked) — local AND
   GitHub Actions CI green.
 - genvm-lint: 3/3 checks + SDK validation passed (Python 3.12 toolchain).
 - Live consensus smoke (challenge window 300 s, node clock):

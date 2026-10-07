@@ -81,7 +81,12 @@ live against the dApp.
   emit_transfer, `claimable_wei = 0` (double-claim fix verified live)
 - tamper-1: pin digest commits to different window bytes →
   INCONCLUSIVE, fail-closed (underwriting binding enforced)
-- 45/45 direct-mode GenVM tests; CI green; v1 audit findings documented
+- video-demo-174651: full lifecycle driven from the live dApp with an
+  independent burner wallet during the video recording — PAYOUT,
+  identical totals (9.3 / 9.5 mm); live `get_stats`: total=6,
+  payout=4, no_payout=1, inconclusive=1 (its tx hashes are on-chain
+  only, visible in the explorer)
+- 48/48 direct-mode GenVM tests; CI green; v1 audit findings documented
   with regressions in docs/EVIDENCE.md
 
 ## Honest limitations

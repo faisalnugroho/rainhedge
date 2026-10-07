@@ -29,7 +29,11 @@ identity proven by `scripts/prove_byte_identity.py` (SDK get_transaction
 | B | wet weeks → refund | `rain-1` | NO_PAYOUT | 83.0 / 82.2 mm | `paid=0`, **`claimable=0`** (v2 fix verified live) |
 | C | tampered pin | `tamper-1` | INCONCLUSIVE | — (fail-closed) | labels CONSISTENT/UNVERIFIABLE, digest mismatch |
 
-Final `get_stats` (v2): total=5, payout=3, no_payout=1, inconclusive=1.
+Final `get_stats` (v2): total=6, payout=4, no_payout=1, inconclusive=1 —
+the sixth policy (`video-demo-174651`, PAYOUT, same dry windows and
+identical totals) was opened, funded and resolved from the live dApp with
+an independent burner wallet during the Oct 6 video recording; its tx
+hashes live only on-chain (explorer), not in this log.
 
 Every resolve above settled in a single MAJORITY_AGREE consensus round
 (determinism), with the LLM witness labels + verbatim citations sealed
@@ -51,7 +55,9 @@ in `result` and the contract deriving the verdict.
 ## Security audit (v1 → v2)
 
 Two issues found by self-audit before this deployment, both fixed with
-regression tests (45/45 direct-mode GenVM tests green, local + CI):
+regression tests (45/45 direct-mode GenVM tests green at the v2 audit;
+48/48 after the final pre-submission audit added evidence-robustness
+regressions, local + CI):
 
 1. **NO_PAYOUT double-claim** (fund-loss, HIGH): v1 refunded the premium
    at settle but ALSO left `claimable_wei = premium`; `claim_refund`
@@ -70,10 +76,11 @@ regression tests (45/45 direct-mode GenVM tests green, local + CI):
 
 ## Off-chain verification
 
-- 45/45 direct-mode GenVM tests (web/LLM boundaries mocked): parametric
-  outcomes, digest binding (dry pin / wet bytes → fail-closed), citation
-  discipline, model dissent, determinism gates, refund paths, and the
-  two v2 regressions.
+- 48/48 direct-mode GenVM tests (web/LLM boundaries mocked): parametric
+  outcomes and threshold boundaries, digest binding (dry pin / wet bytes
+  → fail-closed), malformed-evidence and wrong-date fail-closed
+  regressions, citation discipline, model dissent, determinism gates,
+  refund paths, and the two v2 regressions.
 - GitHub Actions CI green on every push (`tests.yml`), Pages deploy
   green (`deploy-pages.yml`).
 - genvm-lint 3/3 + SDK validation (Python 3.12 toolchain), rerun on the
