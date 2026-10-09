@@ -103,8 +103,15 @@ idempotent resume re-verified every verdict and invariant on-chain.)
 
 ## E2E on the live dApp (video evidence)
 
-The demo video (docs/rainhedge-demo.mp4) was recorded against the v2
-deployment: burner wallet → faucet → open (pins built in-page over the
-commit-pinned catalog) → fund → resolve from the UI → verdict/totals/
-labels rendered from chain state → explorer view. The Pages dApp now
-runs the v3 frontend (fund_coverage tab, contract 0xE692…45DB).
+The demo video (docs/rainhedge-demo.mp4, 25.1 s) was recorded against
+the LIVE v3 Pages dApp (fund tabs, contract 0xE692…45DB): burner wallet
+→ open → two-sided funding (premium escrow, then coverage escrow by the
+capital provider — order enforced by the contract: coverage without
+premium reverts `fund_premium_first`) → resolve after the challenge
+window → PAYOUT verdict rendered from chain state → explorer view.
+Every step is chain-authoritative: the capture script waits for the
+on-chain state (not page receipts) before each screenshot. Full tx
+hashes for the recorded policy `video-demo-v3-034146` (open /
+fund_policy / fund_coverage / resolve) are in `docs/demo_video_txs.json`;
+the resolved policy reads PAYOUT with totals 9.3 / 9.5 mm and
+`paid_wei = 0.08 ETH` on-chain.

@@ -76,7 +76,9 @@ recorded live against the dApp.
 - Live explorer (contract):
   https://explorer-studio.genlayer.com/address/0xE692257eBA224C6231F9368c707a7004657f45DB
 - dApp: https://faisalnugroho.github.io/rainhedge/
-- Video demo (26.6 s, in-repo, recorded on the v2 dApp build):
+- Video demo (25.1 s, in-repo, recorded live on the v3 dApp build —
+  two-sided funding, resolve, chain-confirmed PAYOUT; tx hashes in
+  docs/demo_video_txs.json):
   https://github.com/faisalnugroho/rainhedge/raw/main/docs/rainhedge-demo.mp4
 - Evidence: docs/EVIDENCE.md + docs/deployment_log.json in the repo
 
@@ -110,8 +112,8 @@ recorded live against the dApp.
 - Single upstream archive; pins bind to exact canonical bytes, but a
   globally wrong upstream record would be consistently wrong.
   Multi-source pinning is the extension path.
-- The ≤30 s demo video was recorded on the v2 dApp build (before the
-  v3 two-sided funding UI landed); the live Pages dApp now runs the v3
-  frontend bound to the v3 contract.
+- The ≤30 s demo video was recorded live against the v3 dApp on the
+  v3 contract (two-sided funding + resolve + chain-confirmed PAYOUT);
+  full tx hashes for the recorded policy in docs/demo_video_txs.json.
 - Testnet deployment: coverage amounts and the capital-provider role
   are exercised at testnet scale.
