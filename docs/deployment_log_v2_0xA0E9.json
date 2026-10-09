@@ -1,0 +1,347 @@
+{
+  "deploy": {
+    "tx_hash": "0x14c714c1072def3e170386c283219e5bb1478870eb86af0b8f7775faeac4cf57",
+    "address": "0xA0E9fA8a3F9fd44e16C0dBE498A91609f3ea3F88"
+  },
+  "open#drought-1": "0x5dcbbb85d10eee3e7ec73e7f72bbb601978a6c2c6d0e6030be5033c32ea57b70",
+  "drought-1": {
+    "verdict": "PAYOUT",
+    "resolve_tx": "0x3fc23e60bdc671e0d5b74351848caaf1d72aa44b228a966892d2593f38f66276",
+    "totals_mm": [
+      "9.300000",
+      "9.500000"
+    ],
+    "labels": [
+      "CONSISTENT",
+      "CONSISTENT"
+    ],
+    "paid_wei": "8000000000000000",
+    "claimable_wei": "2000000000000000",
+    "result": {
+      "citations": [
+        {
+          "quote": "\"2026-03-09\"",
+          "source": 0
+        },
+        {
+          "quote": "\"2026-03-15\"",
+          "source": 0
+        },
+        {
+          "quote": "[1.9,1.5,1.2,0.8,0.1,0.1,3.7]",
+          "source": 0
+        },
+        {
+          "quote": "\"2026-05-25\"",
+          "source": 1
+        },
+        {
+          "quote": "\"2026-05-31\"",
+          "source": 1
+        },
+        {
+          "quote": "[2.7,0.8,0,0,0.5,3.2,2.3]",
+          "source": 1
+        }
+      ],
+      "labels": [
+        "CONSISTENT",
+        "CONSISTENT"
+      ],
+      "manifest": [
+        {
+          "bytes": 347,
+          "digest_ok": true,
+          "end": "2026-03-15",
+          "start": "2026-03-09"
+        },
+        {
+          "bytes": 343,
+          "digest_ok": true,
+          "end": "2026-05-31",
+          "start": "2026-05-25"
+        }
+      ],
+      "reason": "Both records are valid JSON strings with daily.time and daily.precipitation_sum arrays of equal length 7. The dates exactly match each stated window, and all precipitation values shown are non-negative numbers.",
+      "totals_mm": [
+        "9.300000",
+        "9.500000"
+      ],
+      "trigger_mm": "35.000000",
+      "verdict": "PAYOUT"
+    }
+  },
+  "open#drought-2": "0xc7b8b9cdda3e47b1b1f4b508dddf4b472ede1055cc6b146839b32d7022b51e1e",
+  "drought-2": {
+    "verdict": "PAYOUT",
+    "resolve_tx": "0xb78fcf59f828234664d18910ce0fef974ed4feb72e748907ce7070e8b512c749",
+    "totals_mm": [
+      "9.300000",
+      "9.500000"
+    ],
+    "labels": [
+      "CONSISTENT",
+      "CONSISTENT"
+    ],
+    "paid_wei": "8000000000000000",
+    "claimable_wei": "2000000000000000",
+    "result": {
+      "citations": [
+        {
+          "quote": "\"2026-03-09\"",
+          "source": 0
+        },
+        {
+          "quote": "\"2026-05-25\"",
+          "source": 1
+        }
+      ],
+      "labels": [
+        "CONSISTENT",
+        "CONSISTENT"
+      ],
+      "manifest": [
+        {
+          "bytes": 347,
+          "digest_ok": true,
+          "end": "2026-03-15",
+          "start": "2026-03-09"
+        },
+        {
+          "bytes": 343,
+          "digest_ok": true,
+          "end": "2026-05-31",
+          "start": "2026-05-25"
+        }
+      ],
+      "reason": "Both records are well\u2011formed JSON and each contains a daily time list whose dates exactly match the corresponding policy window and a precipitation_sum list of equal length with non\u2011negative values.",
+      "totals_mm": [
+        "9.300000",
+        "9.500000"
+      ],
+      "trigger_mm": "35.000000",
+      "verdict": "PAYOUT"
+    }
+  },
+  "open#drought-3": "0x9767b1c4fc208fd4c95fe816aeab51350d34c9790b6687d5315bc33a64964e57",
+  "drought-3": {
+    "verdict": "PAYOUT",
+    "resolve_tx": "0x9ea9ffc4e4f213bf432267a710b3699b3dc9a7b4c4cd59fb61225d5ad2a5c1f6",
+    "totals_mm": [
+      "9.300000",
+      "9.500000"
+    ],
+    "labels": [
+      "CONSISTENT",
+      "CONSISTENT"
+    ],
+    "paid_wei": "8000000000000000",
+    "claimable_wei": "2000000000000000",
+    "result": {
+      "citations": [
+        {
+          "quote": "\"2026-03-09\"",
+          "source": 0
+        },
+        {
+          "quote": "\"2026-03-15\"",
+          "source": 0
+        },
+        {
+          "quote": "\"precipitation_sum\":[1.9,1.5,1.2,0.8,0.1,0.1,3.7]",
+          "source": 0
+        },
+        {
+          "quote": "\"2026-05-25\"",
+          "source": 1
+        },
+        {
+          "quote": "\"2026-05-31\"",
+          "source": 1
+        },
+        {
+          "quote": "\"precipitation_sum\":[2.7,0.8,0,0,0.5,3.2,2.3]",
+          "source": 1
+        }
+      ],
+      "labels": [
+        "CONSISTENT",
+        "CONSISTENT"
+      ],
+      "manifest": [
+        {
+          "bytes": 347,
+          "digest_ok": true,
+          "end": "2026-03-15",
+          "start": "2026-03-09"
+        },
+        {
+          "bytes": 343,
+          "digest_ok": true,
+          "end": "2026-05-31",
+          "start": "2026-05-25"
+        }
+      ],
+      "reason": "Document 0 contains a well-formed JSON daily precipitation series with 7 dates spanning 2026-03-09 to 2026-03-15 and a parallel precipitation_sum list of 7 non-negative numeric values, exactly matching the documented window. Document 1 contains a well-formed JSON daily precipitation series with 7 dates spanning 2026-05-25 to 2026-05-31 and a parallel precipitation_sum list of 7 non-negative numeric values (including valid zeros), exactly matching its documented window.",
+      "totals_mm": [
+        "9.300000",
+        "9.500000"
+      ],
+      "trigger_mm": "35.000000",
+      "verdict": "PAYOUT"
+    }
+  },
+  "open#rain-1": "0xd8f553283f1ef7977fc9b442b62192363d58dc1f8456b547f3437709a58bc2f4",
+  "rain-1": {
+    "verdict": "NO_PAYOUT",
+    "resolve_tx": "0x63177c009e5cfc8fbe22a1814e54d1a24f40de4cdb009e0b14bbe7d2c9d06f15",
+    "totals_mm": [
+      "83.000000",
+      "82.200000"
+    ],
+    "labels": [
+      "CONSISTENT",
+      "CONSISTENT"
+    ],
+    "paid_wei": "0",
+    "claimable_wei": "0",
+    "result": {
+      "citations": [
+        {
+          "quote": "\"2026-03-02\"",
+          "source": 0
+        },
+        {
+          "quote": "\"2026-03-08\"",
+          "source": 0
+        },
+        {
+          "quote": "\"precipitation_sum\":[10.6,11.7,7.4,4.8,3.4,36.9,8.2]",
+          "source": 0
+        },
+        {
+          "quote": "\"2026-02-02\"",
+          "source": 1
+        },
+        {
+          "quote": "\"2026-02-08\"",
+          "source": 1
+        },
+        {
+          "quote": "\"precipitation_sum\":[8.5,2.2,7.1,12.2,13.7,13.2,25.3]",
+          "source": 1
+        }
+      ],
+      "labels": [
+        "CONSISTENT",
+        "CONSISTENT"
+      ],
+      "manifest": [
+        {
+          "bytes": 350,
+          "digest_ok": true,
+          "end": "2026-03-08",
+          "start": "2026-03-02"
+        },
+        {
+          "bytes": 351,
+          "digest_ok": true,
+          "end": "2026-02-08",
+          "start": "2026-02-02"
+        }
+      ],
+      "reason": "Document 0 contains a well-formed JSON daily precipitation record with a 'time' list of 7 ISO dates spanning 2026-03-02 to 2026-03-08 and a parallel 'precipitation_sum' list of 7 non-negative numeric values, exactly matching the documented window. Document 1 contains a well-formed JSON daily precipitation record with a 'time' list of 7 ISO dates spanning 2026-02-02 to 2026-02-08 and a parallel 'precipitation_sum' list of 7 non-negative numeric values, exactly matching its documented window. Both records are structurally sound with equal-length lists, no negative values, and dates fully consistent with their respective policy windows.",
+      "totals_mm": [
+        "83.000000",
+        "82.200000"
+      ],
+      "trigger_mm": "35.000000",
+      "verdict": "NO_PAYOUT"
+    }
+  },
+  "open#tamper-1": "0x51379b6059776785ebe5cbbad9fa0cd7158f30e5473cd426bb9b68115d019b23",
+  "tamper-1": {
+    "verdict": "INCONCLUSIVE",
+    "resolve_tx": "0x37bf7e467f341f8071f2972aeed2bb4e216b029a3bf153c962ab23493f3c73c4",
+    "totals_mm": [],
+    "labels": [
+      "CONSISTENT",
+      "UNVERIFIABLE"
+    ],
+    "paid_wei": "0",
+    "claimable_wei": "10000000000000000",
+    "result": {
+      "citations": [
+        {
+          "quote": "\"precipitation_sum\":[1.9,1.5,1.2,0.8,0.1,0.1,3.7]",
+          "source": 0
+        }
+      ],
+      "labels": [
+        "CONSISTENT",
+        "UNVERIFIABLE"
+      ],
+      "manifest": [
+        {
+          "bytes": 347,
+          "digest_ok": true,
+          "end": "2026-03-15",
+          "start": "2026-03-09"
+        },
+        {
+          "bytes": 0,
+          "digest_ok": false,
+          "end": "2026-05-31",
+          "start": "2026-05-25"
+        }
+      ],
+      "reason": "Document 0 is valid JSON with parallel daily.time and daily.precipitation_sum arrays of equal length, all non-negative, and dates exactly matching 2026-03-09 through 2026-03-15. Document 1 is empty, so its JSON content and series cannot be verified.",
+      "totals_mm": [],
+      "trigger_mm": "35.000000",
+      "verdict": "INCONCLUSIVE"
+    }
+  },
+  "results": {
+    "determinism_consistent": true,
+    "verdicts": [
+      "PAYOUT",
+      "PAYOUT",
+      "PAYOUT"
+    ],
+    "rain_refund": "NO_PAYOUT",
+    "tamper_fails_closed": "INCONCLUSIVE",
+    "windows": {
+      "dry": [
+        [
+          "2026-03-09",
+          "2026-03-15"
+        ],
+        [
+          "2026-05-25",
+          "2026-05-31"
+        ]
+      ],
+      "wet": [
+        [
+          "2026-03-02",
+          "2026-03-08"
+        ],
+        [
+          "2026-02-02",
+          "2026-02-08"
+        ]
+      ]
+    },
+    "trigger_mm": "35"
+  },
+  "code_sha256_repo": "7f202ca16fcdb8fc21c1b6b8745c001e89fe3e8e4c100e93228f8e435d7c8a04",
+  "byte_identity_proof": {
+    "deploy_tx": "0x14c714c1072def3e170386c283219e5bb1478870eb86af0b8f7775faeac4cf57",
+    "address": "0xA0E9fA8a3F9fd44e16C0dBE498A91609f3ea3F88",
+    "method": "genlayer_py get_transaction -> data.contract_code (base64 of deployed Python source), sha256 compared with contracts/rainhedge.py at this repo's HEAD",
+    "bytes": 31598,
+    "onchain_sha256": "7f202ca16fcdb8fc21c1b6b8745c001e89fe3e8e4c100e93228f8e435d7c8a04",
+    "repo_sha256": "7f202ca16fcdb8fc21c1b6b8745c001e89fe3e8e4c100e93228f8e435d7c8a04",
+    "match": true
+  }
+}

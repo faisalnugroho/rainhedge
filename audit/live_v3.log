@@ -1,0 +1,25 @@
+verifier: 0x8183965AD0A53EebcD1869C93d794733291cfD10 balance: 3820000000000000000
+preserved v2 log -> docs/deployment_log_v2_0xA0E9.json
+== preflight (canonical digests over live records) ==
+preflight ok: ('2026-03-09', '2026-03-15') 347 bytes  sha 6352e857fe03
+preflight ok: ('2026-05-25', '2026-05-31') 343 bytes  sha 7bb5eb868f1c
+preflight ok: ('2026-03-02', '2026-03-08') 350 bytes  sha cac1dc42602b
+preflight ok: ('2026-02-02', '2026-02-08') 351 bytes  sha f895e2a5e85d
+[open#drought-1] exists (status=ACTIVE), skipping
+[fund#drought-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[fundcov#drought-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[drought-1] challenge window: sleeping 320s...
+[resolve#drought-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+drought-1: PAYOUT totals=['9.300000', '9.500000']
+  [retry 1] GenLayerError: gen_call failed (code=-32000): execution failed
+[open#drought-2] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[fund#drought-2] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[fundcov#drought-2] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[drought-2] challenge window: sleeping 320s...
+[resolve#drought-2] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+drought-2: PAYOUT totals=['9.300000', '9.500000']
+  [retry 1] GenLayerError: gen_call failed (code=-32000): execution failed
+[open#drought-3] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[fund#drought-3] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[fundcov#drought-3] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[drought-3] challenge window: sleeping 320s...

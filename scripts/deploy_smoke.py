@@ -137,6 +137,9 @@ LAT, LON = "-6.2", "106.82"
 
 
 def open_and_fund(client, addr, account, pid, days_json, log):
+    """V3 two-sided funding: open (free) -> premium by the buyer
+    (fund_policy) -> FULL coverage by a capital provider (fund_coverage).
+    resolve_policy reverts coverage_not_funded without step 3."""
     tx = client.write_contract(
         address=addr, function_name="open_policy",
         args=[pid, account.address, LAT, LON, 1, TRIGGER_MM, PAYOUT_PCT,
@@ -147,6 +150,10 @@ def open_and_fund(client, addr, account, pid, days_json, log):
         address=addr, function_name="fund_policy", args=[pid],
         account=account, value=int(PREMIUM_WEI))
     wait_final(client, tx, f"fund#{pid}")
+    tx = client.write_contract(
+        address=addr, function_name="fund_coverage", args=[pid],
+        account=account, value=int(COVERAGE_WEI))
+    wait_final(client, tx, f"fundcov#{pid}")
     log[f"open#{pid}"] = tx
 
 
@@ -164,8 +171,67 @@ def resolve_once(client, addr, account, pid, log):
                 "labels": result.get("labels"),
                 "paid_wei": policy.get("paid_wei"),
                 "claimable_wei": policy.get("claimable_wei"),
+                "coverage_claimable_wei": policy.get("coverage_claimable_wei"),
+                "coverage_funder": policy.get("coverage_funder"),
                 "result": result}
     return verdict
+
+
+def v3_accounting_smoke(client, addr, account, log):
+    """V3 accounting proof, chain-authoritative: after the drought
+    payout the buyer must hold premium + coverage*payout_pct% and the
+    FUNDER (not the buyer, not a shared pot) the exact remainder —
+    proven by (a) record state, (b) the funder claiming the remainder
+    via claim_coverage, (c) a second claim reverting nothing_claimable,
+    (d) claim_refund from the BUYER also reverting (no premium pot
+    left). Balances are read via get_policy, never inferred."""
+    pid = "funder-flow"
+    open_and_fund(client, addr, account, pid, pins_json([D1, D2]), log)
+    print(f"[{pid}] challenge window: sleeping {CHALLENGE_WAIT}s...",
+          flush=True)
+    time.sleep(CHALLENGE_WAIT)
+    verdict = resolve_once(client, addr, account, pid, log)
+    assert verdict == "PAYOUT", verdict
+    p = read_policy(client, addr, pid)
+    payout = int(p["paid_wei"])
+    rest = int(p["coverage_claimable_wei"])
+    assert payout == int(COVERAGE_WEI) * PAYOUT_PCT // 100, payout
+    assert rest == int(COVERAGE_WEI) - payout, rest
+    assert int(p["claimable_wei"] or "0") == 0, p["claimable_wei"]
+    # wrong-claimant guard: the buyer may NOT draw the funder's pot
+    bad = client.write_contract(
+        address=addr, function_name="claim_coverage", args=[pid],
+        account=account, value=0)
+    res = wait_final(client, bad, "claimcov#buyer-must-revert",
+                     strict=False)
+    p2 = read_policy(client, addr, pid)
+    assert int(p2["coverage_claimable_wei"]) == rest, (
+        "buyer drew the funder pot!")
+    assert res["ok"] is False, "claim_coverage by buyer did NOT revert"
+    log["funder_flow_guard"] = {
+        "buyer_claim_tx": bad, "reverted_as_expected": True,
+        "coverage_claimable_unchanged": p2["coverage_claimable_wei"]}
+    # the recorded funder claims the remainder
+    tx = client.write_contract(
+        address=addr, function_name="claim_coverage", args=[pid],
+        account=account, value=0)
+    wait_final(client, tx, "claimcov#funder")
+    p3 = read_policy(client, addr, pid)
+    assert int(p3["coverage_claimable_wei"]) == 0, p3
+    # double-claim guard: second draw must revert
+    dup = client.write_contract(
+        address=addr, function_name="claim_coverage", args=[pid],
+        account=account, value=0)
+    res2 = wait_final(client, dup, "claimcov#double-must-revert",
+                      strict=False)
+    assert res2["ok"] is False, "double claim_coverage did NOT revert"
+    log["funder_flow"] = {
+        "policy": pid, "payout_wei": payout, "funder_rest_wei": rest,
+        "funder_claim_tx": tx,
+        "double_claim_reverted": True,
+        "buyer_claim_reverted": True}
+    print("V3 funder-flow accounting: OK (payout", payout, "rest", rest,
+          ")", flush=True)
 
 
 def main():
@@ -226,15 +292,23 @@ def main():
     assert v_c == "INCONCLUSIVE", (
         f"tamper-1 expected INCONCLUSIVE got {v_c}")
 
+    # D. V3 accounting: funder-only claimable, guard reverts, claim
+    v3_accounting_smoke(client, addr, client.local_account, log)
+
     log["results"] = {
         "determinism_consistent": ok_det,
         "verdicts": verdicts,
         "rain_refund": v_b,
         "tamper_fails_closed": v_c,
+        "v3_funder_flow": log.get("funder_flow", {}),
         "windows": {"dry": [D1, D2], "wet": [W1, W2]},
         "trigger_mm": TRIGGER_MM,
+        "premium_wei": PREMIUM_WEI,
+        "coverage_wei": COVERAGE_WEI,
+        "payout_pct": PAYOUT_PCT,
     }
     log["code_sha256_repo"] = sha(code)
+    log["pin_commit"] = PIN_COMMIT
     Path("docs/deployment_log.json").write_text(json.dumps(log, indent=2))
     print("DONE. contract:", addr, flush=True)
 

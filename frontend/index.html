@@ -324,6 +324,11 @@ footer .row{justify-content:space-between}
 
       <!-- FUND -->
       <div class="pane" id="paneFund">
+        <p class="hint" style="margin-top:0">v3: a policy needs BOTH sides
+        funded before it can resolve — the buyer escrows the premium, and a
+        capital provider escrows the FULL declared coverage
+        (<code>fund_coverage</code>). Settlement then pays from declared
+        coverage, never from the premium.</p>
         <div class="grid2">
           <div class="field"><label>Policy id</label><input id="fundPid" class="mono"></div>
           <div class="field"><label>Premium (wei, sent exactly)</label>
@@ -331,6 +336,13 @@ footer .row{justify-content:space-between}
         </div>
         <button class="primary" id="btnFund">Send premium</button>
         <div class="status" id="stFund"></div>
+        <div class="grid2" style="margin-top:18px">
+          <div class="field"><label>Policy id</label><input id="covPid" class="mono"></div>
+          <div class="field"><label>Coverage (wei, sent exactly)</label>
+            <input id="covAmt" class="mono" value="100000000000000000"></div>
+        </div>
+        <button class="primary" id="btnCov">Fund coverage (capital provider)</button>
+        <div class="status" id="stCov"></div>
       </div>
 
       <!-- RESOLVE -->
@@ -387,13 +399,13 @@ footer .row{justify-content:space-between}
 <script>
 "use strict";
 /* ================= contract binding ================= */
-const CONTRACT = "0xA0E9fA8a3F9fd44e16C0dBE498A91609f3ea3F88";
+const CONTRACT = "0xE692257eBA224C6231F9368c707a7004657f45DB";
 const OWNER = "faisalnugroho";
 const REPO = "rainhedge";
 const RECORDS_COMMIT = "c55dbe185986988be99023221f9835624baa4e05";
 const SDK = window.GenLayerSDK;
 const $ = id => document.getElementById(id);
-const BUILD = "frontend @ c55dbe1";
+const BUILD = "frontend v3 (contract 0xE692...45DB)";
 
 /* ================= canonicalization (MUST equal the contract) ===== */
 function stripTimingAndSort(parsed){
@@ -572,6 +584,15 @@ $("btnFund").addEventListener("click", async () => {
   }catch(e){ setStatus("stFund","err", e.message); }
 });
 
+$("btnCov").addEventListener("click", async () => {
+  try{
+    const hash = await sendWrite("fund_coverage", [$("#covPid").value.trim()],
+      String($("#covAmt").value.trim()));
+    setStatus("stCov","ok","Coverage funded. tx " + hash.slice(0,18) + "… — policy can now resolve.");
+    refreshList();
+  }catch(e){ setStatus("stCov","err", e.message); }
+});
+
 /* ================= resolve + list ================= */
 function policyRow(p){
   const res = p.result || {};
@@ -580,14 +601,21 @@ function policyRow(p){
   div.className = "policyitem";
   const badge = v ? '<span class="badge ' + v + '">' + v + '</span>'
                   : '<span class="badge ' + p.status + '">' + p.status + '</span>';
+  const covFunded = parseInt(p.coverage_funded_wei || "0",10) > 0;
+  const covClaimable = parseInt(p.coverage_claimable_wei || "0",10) > 0;
   div.innerHTML =
     '<div class="meta"><div class="pid mono">' + p.id + '</div>' +
     '<div class="det">trigger ' + p.trigger_mm + ' mm · payout ' + p.payout_pct +
-    '% · ' + (p.windows||[]).map(w2=>w2[0]+"→"+w2[1]).join(" · ") + '</div>' +
+    '% of coverage ' + p.coverage_wei + ' wei · ' + (p.windows||[]).map(w2=>w2[0]+"→"+w2[1]).join(" · ") + '</div>' +
     '<div class="det mono" style="margin-top:4px">premium ' + p.premium_wei +
     ' wei' + (p.paid_wei && p.paid_wei !== "0" ? ' · paid ' + p.paid_wei : '') +
-    (p.claimable_wei && p.claimable_wei !== "0" ? ' · claimable ' + p.claimable_wei : '') +
-    '</div></div>' + badge;
+    (p.claimable_wei && p.claimable_wei !== "0" ? ' · buyer-claimable ' + p.claimable_wei : '') +
+    (covClaimable ? ' · funder-claimable ' + p.coverage_claimable_wei : '') +
+    '</div>' +
+    (p.status === "ACTIVE" ? '<div class="det mono" style="margin-top:2px">funding: premium ' +
+      (parseInt(p.balance_wei||"0",10) > 0 ? "✓" : "✗") + ' · coverage ' +
+      (covFunded ? "✓" : "✗ — needs fund_coverage before resolve") + '</div>' : '') +
+    '</div>' + badge;
   const actions = document.createElement("div");
   actions.className = "row";
   const bView = document.createElement("button");
@@ -595,10 +623,22 @@ function policyRow(p){
   bView.addEventListener("click", () => { $("viewPid").value = p.id; showPolicy(p); });
   actions.appendChild(bView);
   if (p.status === "ACTIVE"){
-    const bRes = document.createElement("button");
-    bRes.className = "tiny primary"; bRes.textContent = "Resolve";
-    bRes.addEventListener("click", () => doResolve(p.id, bRes));
-    actions.appendChild(bRes);
+    if (parseInt(p.coverage_funded_wei || "0",10) > 0){
+      const bRes = document.createElement("button");
+      bRes.className = "tiny primary"; bRes.textContent = "Resolve";
+      bRes.addEventListener("click", () => doResolve(p.id, bRes));
+      actions.appendChild(bRes);
+    } else {
+      const hint = document.createElement("span");
+      hint.className = "hint"; hint.textContent = "awaiting fund_coverage";
+      actions.appendChild(hint);
+    }
+  }
+  if (p.status === "RESOLVED" && parseInt(p.coverage_claimable_wei || "0",10) > 0){
+    const bCov = document.createElement("button");
+    bCov.className = "tiny"; bCov.textContent = "Claim coverage";
+    bCov.addEventListener("click", () => doClaimCoverage(p.id, bCov));
+    actions.appendChild(bCov);
   }
   if (p.status === "RESOLVED" && parseInt(p.claimable_wei || "0",10) > 0){
     const bClaim = document.createElement("button");
@@ -632,6 +672,14 @@ async function doClaim(pid, btn){
     refreshList();
   }catch(e){ setStatus("stResolve","err", e.message); btn.disabled = false; }
 }
+async function doClaimCoverage(pid, btn){
+  btn.disabled = true;
+  try{
+    const hash = await sendWrite("claim_coverage", [pid]);
+    setStatus("stResolve","ok","Coverage capital claimed. tx " + hash.slice(0,18) + "…");
+    refreshList();
+  }catch(e){ setStatus("stResolve","err", e.message); btn.disabled = false; }
+}
 async function refreshList(){
   try{
     const ids = await readView("list_policies", []);
@@ -662,7 +710,10 @@ function showPolicy(p){
       card("windows", (p.windows||[]).map(w2=>w2[0]+"→"+w2[1]).join(" · ")) +
       card("totals mm", (res.totals_mm||[]).join(" | ") || "—") +
       card("paid", (p.paid_wei||"0") + " wei") +
-      card("claimable", (p.claimable_wei||"0") + " wei") +
+      card("buyer-claimable", (p.claimable_wei||"0") + " wei") +
+      card("coverage funded", (p.coverage_funded_wei||"0") + " wei") +
+      card("coverage funder", p.coverage_funder || "—") +
+      card("funder-claimable", (p.coverage_claimable_wei||"0") + " wei") +
     '</div>' +
     (res.labels ? '<div class="cites">witness labels: <b class="mono">' + res.labels.join(", ") + '</b></div>' : '') +
     (res.citations && res.citations.length ? '<div class="cites">citations:<ul>' +

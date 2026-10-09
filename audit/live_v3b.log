@@ -1,0 +1,20 @@
+verifier: 0x8183965AD0A53EebcD1869C93d794733291cfD10 balance: 3490000000000000000
+== preflight (canonical digests over live records) ==
+preflight ok: ('2026-03-09', '2026-03-15') 347 bytes  sha 6352e857fe03
+preflight ok: ('2026-05-25', '2026-05-31') 343 bytes  sha 7bb5eb868f1c
+preflight ok: ('2026-03-02', '2026-03-08') 350 bytes  sha cac1dc42602b
+preflight ok: ('2026-02-02', '2026-02-08') 351 bytes  sha f895e2a5e85d
+[open#drought-1] exists (status=RESOLVED), skipping
+[fund#drought-1] vote=MAJORITY_AGREE exec=ERROR ok=False reason=policy_not_active
+Traceback (most recent call last):
+  File "/home/ubuntu/rainhedge/scripts/live_verify_v3.py", line 405, in <module>
+    main()
+  File "/home/ubuntu/rainhedge/scripts/live_verify_v3.py", line 258, in main
+    p = open_fund_resolve(client, signer, log, "drought-%d" % i,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/rainhedge/scripts/live_verify_v3.py", line 163, in open_fund_resolve
+    wait_final(client, write(client, acct, "fund_policy", [pid],
+  File "/home/ubuntu/rainhedge/scripts/live_verify_v3.py", line 108, in wait_final
+    raise RuntimeError(
+RuntimeError: fund#drought-1 failed: vote=MAJORITY_AGREE exec=ERROR reason=policy_not_active stderr_tail=
+LIVE_VERIFY_EXIT=1

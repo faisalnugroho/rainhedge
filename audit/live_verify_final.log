@@ -1,0 +1,33 @@
+verifier: 0x8183965AD0A53EebcD1869C93d794733291cfD10 balance: 3160000000000000000
+== preflight (canonical digests over live records) ==
+preflight ok: ('2026-03-09', '2026-03-15') 347 bytes  sha 6352e857fe03
+preflight ok: ('2026-05-25', '2026-05-31') 343 bytes  sha 7bb5eb868f1c
+preflight ok: ('2026-03-02', '2026-03-08') 350 bytes  sha cac1dc42602b
+preflight ok: ('2026-02-02', '2026-02-08') 351 bytes  sha f895e2a5e85d
+[open#drought-1] exists (status=RESOLVED), skipping
+drought-1: PAYOUT totals=['9.300000', '9.500000']
+[open#drought-2] exists (status=RESOLVED), skipping
+drought-2: PAYOUT totals=['9.300000', '9.500000']
+[open#drought-3] exists (status=RESOLVED), skipping
+drought-3: PAYOUT totals=['9.300000', '9.500000']
+DETERMINISM: ['PAYOUT', 'PAYOUT', 'PAYOUT']
+[payout_accounting] drought-1 remainder already claimed (resume); verifying post-claim state
+[claim_coverage#double] vote=MAJORITY_AGREE exec=ERROR ok=False reason=nothing_claimable
+[claim_refund#no-premium-pot] vote=MAJORITY_AGREE exec=ERROR ok=False reason=nothing_claimable
+[open#rain-1] exists (status=RESOLVED), skipping
+rain-1: NO_PAYOUT totals=['83.000000', '82.200000']
+[no_payout_claim] rain-1 coverage already claimed (resume)
+[open#tamper-1] exists (status=ACTIVE), skipping
+[tamper-1] challenge window: sleeping 320s...
+[resolve#tamper-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+tamper-1: INCONCLUSIVE totals=[]
+[claim_refund#tamper-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[claim_refund#double] vote=MAJORITY_AGREE exec=ERROR ok=False reason=nothing_claimable
+[claim_coverage#tamper-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+  [retry 1] GenLayerError: gen_call failed (code=-32000): execution failed
+[open#nocov-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[fund#nocov-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[resolve#coverage-not-funded] vote=MAJORITY_AGREE exec=ERROR ok=False reason=coverage_not_funded
+FINAL stats: {'inconclusive': 1, 'no_payout': 1, 'payout': 3, 'total': 5}
+FINAL exposure: {'cap_wei': 100000000000000000000, 'total_exposure_wei': '600000000000000000'}
+DONE. contract: 0xE692257eBA224C6231F9368c707a7004657f45DB

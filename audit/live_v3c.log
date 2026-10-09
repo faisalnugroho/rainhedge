@@ -1,0 +1,44 @@
+verifier: 0x8183965AD0A53EebcD1869C93d794733291cfD10 balance: 3480000000000000000
+== preflight (canonical digests over live records) ==
+preflight ok: ('2026-03-09', '2026-03-15') 347 bytes  sha 6352e857fe03
+preflight ok: ('2026-05-25', '2026-05-31') 343 bytes  sha 7bb5eb868f1c
+preflight ok: ('2026-03-02', '2026-03-08') 350 bytes  sha cac1dc42602b
+preflight ok: ('2026-02-02', '2026-02-08') 351 bytes  sha f895e2a5e85d
+[open#drought-1] exists (status=RESOLVED), skipping
+drought-1: PAYOUT totals=['9.300000', '9.500000']
+[open#drought-2] exists (status=RESOLVED), skipping
+drought-2: PAYOUT totals=['9.300000', '9.500000']
+[open#drought-3] exists (status=RESOLVED), skipping
+drought-3: PAYOUT totals=['9.300000', '9.500000']
+DETERMINISM: ['PAYOUT', 'PAYOUT', 'PAYOUT']
+guard burner: 0xb0ACBE238330E25273B221f826501CB7Fb365f19
+[claim_coverage#wrong-claimant] vote=MAJORITY_AGREE exec=ERROR ok=False reason=only_the_funder_can_claim
+[claim_coverage#funder] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[claim_coverage#double] vote=MAJORITY_AGREE exec=ERROR ok=False reason=nothing_claimable
+[claim_refund#no-premium-pot] vote=MAJORITY_AGREE exec=ERROR ok=False reason=nothing_claimable
+  [retry 1] GenLayerError: gen_call failed (code=-32000): execution failed
+[open#rain-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[fund#rain-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[fundcov#rain-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[rain-1] challenge window: sleeping 320s...
+[resolve#rain-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+rain-1: NO_PAYOUT totals=['83.000000', '82.200000']
+[claim_refund#no-payout] vote=MAJORITY_AGREE exec=ERROR ok=False reason=nothing_claimable
+[claim_coverage#rain-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+  [retry 1] GenLayerError: gen_call failed (code=-32000): execution failed
+[open#tamper-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+[fund#tamper-1] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+  [retry 1] GenLayerError: eth_getTransactionReceipt returned invalid JSON: Expecting value: line 1 column 1 (char 0). Response content: <!DOCTYPE 
+[fundcov#tamper-1] vote=MAJORITY_AGREE exec=ERROR ok=False reason=already_funded
+Traceback (most recent call last):
+  File "/home/ubuntu/rainhedge/scripts/live_verify_v3.py", line 405, in <module>
+    main()
+  File "/home/ubuntu/rainhedge/scripts/live_verify_v3.py", line 324, in main
+    p = open_fund_resolve(client, signer, log, "tamper-1", tampered,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/rainhedge/scripts/live_verify_v3.py", line 167, in open_fund_resolve
+    wait_final(client, write(client, acct, "fund_coverage", [pid],
+  File "/home/ubuntu/rainhedge/scripts/live_verify_v3.py", line 108, in wait_final
+    raise RuntimeError(
+RuntimeError: fundcov#tamper-1 failed: vote=MAJORITY_AGREE exec=ERROR reason=already_funded stderr_tail=
+LIVE_VERIFY_EXIT=1

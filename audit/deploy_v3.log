@@ -1,0 +1,70 @@
+deployer: 0x8183965AD0A53EebcD1869C93d794733291cfD10
+[deploy] vote=MAJORITY_AGREE exec=SUCCESS ok=True
+CONTRACT: 0xE692257eBA224C6231F9368c707a7004657f45DB
+== preflight (canonical digests over live records) ==
+preflight ok: ('2026-03-09', '2026-03-15') 347 bytes  sha 6352e857fe03
+preflight ok: ('2026-05-25', '2026-05-31') 343 bytes  sha 7bb5eb868f1c
+preflight ok: ('2026-03-02', '2026-03-08') 350 bytes  sha cac1dc42602b
+preflight ok: ('2026-02-02', '2026-02-08') 351 bytes  sha f895e2a5e85d
+Traceback (most recent call last):
+  File "/home/ubuntu/rainhedge/.venv/lib/python3.12/site-packages/requests/models.py", line 1116, in json
+    return complexjson.loads(self.text, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/rainhedge/.venv/lib/python3.12/site-packages/genlayer_py/provider/provider.py", line 42, in make_request
+    resp = response.json()
+           ^^^^^^^^^^^^^^^
+  File "/home/ubuntu/rainhedge/.venv/lib/python3.12/site-packages/requests/models.py", line 1120, in json
+    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/rainhedge/scripts/deploy_smoke.py", line 317, in <module>
+    main()
+  File "/home/ubuntu/rainhedge/scripts/deploy_smoke.py", line 266, in main
+    open_and_fund(client, addr, client.local_account, pid,
+  File "/home/ubuntu/rainhedge/scripts/deploy_smoke.py", line 148, in open_and_fund
+    wait_final(client, tx, f"open#{pid}")
+  File "/home/ubuntu/rainhedge/scripts/deploy_smoke.py", line 94, in wait_final
+    receipt = client.wait_for_transaction_receipt(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/rainhedge/.venv/lib/python3.12/site-packages/genlayer_py/client/genlayer_client.py", line 205, in wait_for_transaction_receipt
+    return wait_for_transaction_receipt(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/rainhedge/.venv/lib/python3.12/site-packages/genlayer_py/transactions/actions.py", line 80, in wait_for_transaction_receipt
+    transaction = self.get_transaction(transaction_hash=transaction_hash)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/rainhedge/.venv/lib/python3.12/site-packages/genlayer_py/client/genlayer_client.py", line 219, in get_transaction
+    return get_transaction(self=self, transaction_hash=transaction_hash)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/rainhedge/.venv/lib/python3.12/site-packages/genlayer_py/transactions/actions.py", line 114, in get_transaction
+    transaction = self.provider.make_request(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/rainhedge/.venv/lib/python3.12/site-packages/genlayer_py/provider/provider.py", line 45, in make_request
+    raise GenLayerError(
+genlayer_py.exceptions.GenLayerError: eth_getTransactionByHash returned invalid JSON: Expecting value: line 1 column 1 (char 0). Response content: <!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en-US"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en-US"> <!--<![endif]-->
+<head>
+
+<title>genlayer.com | 502: Bad gateway</title>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" ...
+DEPLOY_EXIT=1
