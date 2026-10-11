@@ -61,7 +61,7 @@ settlement from a dedicated capital provider (resolve reverts
 funder-guard (`only_the_funder_can_claim`) is proven live with tx
 hashes.
 
-Deliverables: 62-test gltest direct-mode suite (local GenVM, mocked
+Deliverables: 64-test gltest direct-mode suite (local GenVM, mocked
 web/LLM boundaries; CI green), live Studionet deployment with a
 5-policy honest smoke (PAYOUT ×3 determinism, NO_PAYOUT full-refund,
 tampered-pin INCONCLUSIVE, unfunded-coverage resolve guard), deployed-
@@ -103,7 +103,7 @@ recorded live against the dApp.
   double claim reverted `nothing_claimable`
 - Final `get_stats`: total=5, payout=3, no_payout=1, inconclusive=1;
   exposure 0.6 / 100 ETH cap
-- 62/62 direct-mode GenVM tests; genvm-lint 3/3; CI green; v1+v2 audit
+- 64/64 direct-mode GenVM tests; genvm-lint 3/3; CI green; v1+v2 audit
   findings documented with regressions in docs/EVIDENCE.md
 
 ## Honest limitations

@@ -90,11 +90,16 @@ idempotent resume re-verified every verdict and invariant on-chain.)
 
 ## Off-chain verification
 
-- 62/62 direct-mode GenVM tests (web/LLM boundaries mocked): parametric
+- 64/64 direct-mode GenVM tests (web/LLM boundaries mocked): parametric
   outcomes and threshold boundaries, digest binding, coordinate
-  binding, malformed-evidence and wrong-date fail-closed regressions,
-  citation discipline, model dissent, determinism gates, refund paths,
-  the v2 regressions, and the v3 two-sided funding/funder-guard paths.
+  binding — including the coordinate gate ISOLATED from the digest
+  gate (pin commits to the shifted bytes so digest verification
+  passes and only the contract's coordinate check can reject, plus a
+  within-tolerance neighboring-cell record proving the 0.25° grid
+  binding does not over-reject) — malformed-evidence and wrong-date
+  fail-closed regressions, citation discipline, model dissent,
+  determinism gates, refund paths, the v2 regressions, and the v3
+  two-sided funding/funder-guard paths.
 - genvm-lint 3/3 on the v3 source; GitHub Actions CI green on every
   push (`tests.yml`), Pages deploy green (`deploy-pages.yml`).
 - Run logs preserved in-repo: `audit/deploy_v3.log`,

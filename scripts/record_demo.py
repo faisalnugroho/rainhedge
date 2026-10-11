@@ -23,7 +23,7 @@ _html = Path(__file__).resolve().parents[1].joinpath(
 _m = re.search(r'const CONTRACT = "(0x[0-9a-fA-F]{40})"', _html)
 CONTRACT = _m.group(1) if _m else \
     "0xA0E9fA8a3F9fd44e16C0dBE498A91609f3ea3F88"
-PID = "video-demo-" + time.strftime("%H%M%S")
+PID = "video-demo-v3-" + time.strftime("%H%M%S")
 SHOT = lambda name: str(OUT / (name + ".png"))
 
 # JS evaluated IN PAGE: fresh-client chain reads (no wallet needed)
@@ -129,13 +129,20 @@ with sync_playwright() as p:
                            + json.dumps(chain_policy(pg, PID))[:200])
     ts(pg, "03-opened", 3.0)
 
-    # fund — chain state is the truth
+    # fund — chain state is the truth. v3 is TWO-SIDED: premium
+    # (fund_policy) AND full coverage by a capital provider
+    # (fund_coverage) — resolve reverts coverage_not_funded without it.
     pg.click('[data-pane="paneFund"]')
     pg.fill("#fundPid", PID)
     pg.click("#btnFund")
     wait_chain(pg, PID,
                lambda q: int(q.get("balance_wei") or "0", 10) > 0,
                24, 15, "funded")
+    pg.fill("#covPid", PID)
+    pg.click("#btnCov")
+    wait_chain(pg, PID,
+               lambda q: int(q.get("coverage_funded_wei") or "0", 10) > 0,
+               24, 15, "coverage funded")
     pg.evaluate("location.reload()")
     pg.wait_for_selector(".hero", timeout=30000)
     time.sleep(2)

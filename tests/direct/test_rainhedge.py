@@ -656,6 +656,71 @@ def test_coord_mismatch_record_inconclusive(c, direct_vm):
     assert p['result']['totals_mm'] == []
 
 
+def test_coord_gate_with_matching_digest(c, direct_vm, direct_alice,
+                                         direct_bob):
+    """The coordinate gate exercised in ISOLATION: the pin commits to
+    the SHIFTED bytes themselves (sha256 over the shifted canonical
+    form), so digest verification passes and the ONLY thing that can
+    reject the record is the contract's own coordinate check. The
+    manifest must show digest_ok=True with coord_ok=False, the label
+    degrades to UNVERIFIABLE, and the verdict fails closed."""
+    shifted = canon(W1, lat=-46.221441, lon=106.856186)
+    buyer = json.loads(c.get_policy('policy-1'))['buyer']
+    direct_vm.sender = direct_alice
+    c.open_policy(**policy_json(
+        policy_id='policy-2',
+        buyer=buyer,
+        days_json=json.dumps([pin(W1, digest=sha(shifted)),
+                              pin(W2)])))
+    fund_both(c, direct_vm, 'policy-2', direct_alice, direct_bob)
+    warp(direct_vm)
+    mock_llm_ok(direct_vm)
+    mock_web_pair(direct_vm, shifted, canon(W2))
+    c.resolve_policy('policy-2')
+    p = json.loads(c.get_policy('policy-2'))
+    assert p['result']['verdict'] == 'INCONCLUSIVE'
+    assert p['result']['labels'] == ['UNVERIFIABLE', 'CONSISTENT']
+    assert p['result']['totals_mm'] == []
+    manifest = p['result']['manifest']
+    assert manifest[0]['digest_ok'] is True
+    assert manifest[0]['coord_ok'] is False
+    assert manifest[1]['digest_ok'] is True
+    assert manifest[1]['coord_ok'] is True
+    # conservation: nothing claimable on the fail-closed path
+    assert p['claimable_wei'] == PREMIUM_WEI
+    assert p['coverage_claimable_wei'] == COVERAGE_WEI
+
+
+def test_coord_within_tolerance_still_measures(c, direct_vm, direct_alice,
+                                               direct_bob):
+    """A record whose own coordinates differ from the policy's declared
+    coordinates but stay WITHIN the 0.25-degree ERA5 grid-cell tolerance
+    passes the gate: the gate is a grid-cell binding, not an exact-match
+    requirement. Same DRY evidence resolves normally (NO_PAYOUT, full
+    premium refund) — proving the gate does not over-reject honest
+    neighboring-cell records."""
+    nearby = canon(W1, lat=-6.35, lon=106.9)  # within 0.25 deg per axis
+    wet2 = canon(W2, WET)  # over the trigger -> honest NO_PAYOUT
+    buyer = json.loads(c.get_policy('policy-1'))['buyer']
+    direct_vm.sender = direct_alice
+    c.open_policy(**policy_json(
+        policy_id='policy-2',
+        buyer=buyer,
+        days_json=json.dumps([pin(W1, digest=sha(nearby)),
+                              pin(W2, digest=sha(wet2))])))
+    fund_both(c, direct_vm, 'policy-2', direct_alice, direct_bob)
+    warp(direct_vm)
+    mock_llm_ok(direct_vm)
+    mock_web_pair(direct_vm, nearby, wet2)
+    c.resolve_policy('policy-2')
+    p = json.loads(c.get_policy('policy-2'))
+    assert p['result']['verdict'] == 'NO_PAYOUT'
+    assert p['result']['labels'] == ['CONSISTENT', 'CONSISTENT']
+    manifest = p['result']['manifest']
+    assert manifest[0]['digest_ok'] is True
+    assert manifest[0]['coord_ok'] is True
+
+
 def test_coord_mismatch_open_reverts(bare, direct_vm, direct_alice):
     """A policy declaring coordinates in a different HEMISPHERE cannot
     pin records carrying the catalog's coordinates: the coordinate gate
